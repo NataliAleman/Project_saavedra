@@ -116,9 +116,7 @@ window.cerrarModalLiberacion = function () {
  * @param {string} nuevoEstado - 'pendiente' | 'aprobado' | 'rechazado'
  */
 function _libActualizarBadgeEstado(ot, nuevoEstado) {
-    const container =
-        document.getElementById(`status-modelo-${ot}`) ||
-        document.getElementById(`status-modelo-${ot.replace(/_R\d+$/i, "")}`);
+    const container = document.getElementById(`status-modelo-${ot}`);
     if (!container) return;
     const assets = window.almacenAppAssets ?? {};
     const imgMap = {

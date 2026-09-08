@@ -111,7 +111,7 @@
                                 <img src="{{ asset('images/galeria.png') }}" style="width: 18px; height: 18px; object-fit: contain;"> Archivos y Dibujos de la OT Disponibles
                             </h4>
 
-                            <div id="env-server-files-container" style="background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; flex: 1; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                            <div id="env-server-files-container" style="background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
                                 <div class="alm-spinner alm-border-top-color-033966 alm-display-block alm-margin-10px-auto"></div>
                             </div>
                         </div>
@@ -122,7 +122,7 @@
                                 <img src="{{ asset('images/anadir.png') }}" style="width: 16px; height: 16px; object-fit: contain;"> Nuevos Archivos Adjuntados
                             </h4>
 
-                            <div id="env-archivos-adicionales-list" style="background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; flex: 1; max-height: 250px; min-height: 140px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;"></div>
+                            <div id="env-archivos-adicionales-list" style="background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;"></div>
                         </div>
 
                     </div>
@@ -146,20 +146,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if(!form) return;
     const btn = document.getElementById("btn-submit-envio");
     
+    // Marcar los campos que originalmente son requeridos
+    const allRequired = form.querySelectorAll("input[required], select[required], textarea[required]");
+    allRequired.forEach(input => input.setAttribute("data-was-required", "true"));
+    
     function checkEnvioValidity() {
         if(!btn) return;
         
-        let isValid = form.checkValidity();
+        let isValid = true;
+        const checkInputs = form.querySelectorAll("[data-was-required='true']");
+        
+        checkInputs.forEach(input => {
+            if (input.offsetParent === null) {
+                input.removeAttribute("required");
+            } else {
+                input.setAttribute("required", "required");
+                if (!input.value.trim()) isValid = false;
+            }
+        });
         
         // Verificar que hay al menos una pre-orden seleccionada
         const pendingChecked = form.querySelectorAll('input[name="pre_orden_ids[]"]:checked').length > 0;
         if (!pendingChecked) isValid = false;
         
-        // Verificar que hay al menos un archivo adjunto (ya sea de los disponibles en el servidor o subidos)
-        const serverFilesChecked = form.querySelectorAll('input[name="archivos_seleccionados[]"]:checked').length > 0;
+        // Verificar que el usuario haya subido obligatoriamente el archivo escaneado
         const adicionalesCount = window.adicionalesSelectedFiles ? window.adicionalesSelectedFiles.length : 0;
         
-        if (!serverFilesChecked && adicionalesCount === 0) isValid = false;
+        if (adicionalesCount === 0) isValid = false;
         
         if (isValid) {
             btn.disabled = false;

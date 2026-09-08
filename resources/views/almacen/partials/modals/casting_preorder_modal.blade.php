@@ -184,34 +184,31 @@ document.addEventListener("DOMContentLoaded", () => {
     
     function checkCastingFormValidity() {
         if(!btn) return;
+        
+        // Manejar dinámicamente los campos requeridos para evitar errores de HTML5
+        const checkInputs = form.querySelectorAll("input[required], select[required], textarea[required], [data-was-required='true']");
+        let isValid = true;
+        
+        checkInputs.forEach(input => {
+            if (!input.hasAttribute("data-was-required")) {
+                input.setAttribute("data-was-required", "true");
+            }
+            if (input.offsetParent === null) {
+                // Oculto (ej. página 2 no activa): quitamos el required
+                input.removeAttribute("required");
+            } else {
+                // Visible: restauramos el required y validamos
+                input.setAttribute("required", "required");
+                if (!input.value || !String(input.value).trim()) isValid = false;
+            }
+        });
+        
         const p1HasRows = document.getElementById("alm-tbody-poc-p1") && document.getElementById("alm-tbody-poc-p1").querySelectorAll("tr").length > 0;
-        let isValid = p1HasRows;
+        if (!p1HasRows) isValid = false;
         
-        // Validate Page 1 required fields
-        const p1Required = document.getElementById("poc-page-1")?.querySelectorAll("[required]");
-        if(p1Required) {
-            for(let i=0; i<p1Required.length; i++) {
-                if(!p1Required[i].value) {
-                    isValid = false;
-                    break;
-                }
-            }
-        }
-        
-        // Validate Page 2 if active
-        if(hasPage2Input && hasPage2Input.value === "1") {
+        if (hasPage2Input && hasPage2Input.value === "1") {
             const p2HasRows = document.getElementById("alm-tbody-poc-p2") && document.getElementById("alm-tbody-poc-p2").querySelectorAll("tr").length > 0;
-            if(!p2HasRows) isValid = false;
-            
-            const p2Required = document.getElementById("poc-page-2")?.querySelectorAll("[required]");
-            if(p2Required && isValid) {
-                for(let i=0; i<p2Required.length; i++) {
-                    if(!p2Required[i].value) {
-                        isValid = false;
-                        break;
-                    }
-                }
-            }
+            if (!p2HasRows) isValid = false;
         }
         
         if (isValid) {

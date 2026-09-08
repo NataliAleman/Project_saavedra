@@ -119,10 +119,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if(!form) return;
     const btn = document.getElementById("btn-submit-scar");
     
+    // Marcar los campos que originalmente son requeridos
+    const allRequired = form.querySelectorAll("input[required], select[required], textarea[required]");
+    allRequired.forEach(input => input.setAttribute("data-was-required", "true"));
+    
     function checkScarValidity() {
         if(!btn) return;
         
-        let isValid = form.checkValidity();
+        let isValid = true;
+        const checkInputs = form.querySelectorAll("[data-was-required='true']");
+        
+        checkInputs.forEach(input => {
+            if (input.offsetParent === null) {
+                input.removeAttribute("required");
+            } else {
+                input.setAttribute("required", "required");
+                if (!input.value.trim()) isValid = false;
+            }
+        });
         
         if (isValid) {
             btn.disabled = false;

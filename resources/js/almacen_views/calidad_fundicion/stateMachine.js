@@ -176,11 +176,7 @@ const ModeloStateMachine = (() => {
     const _cache = {};
     // ── Aplicar estado al DOM ─────────────────────────────────────────────────
     function _render(ot, estado, cfg) {
-        const el =
-            document.getElementById(`status-modelo-${ot}`) ||
-            document.getElementById(
-                `status-modelo-${ot.replace(/_R\d+$/i, "")}`,
-            );
+        const el = document.getElementById(`status-modelo-${ot}`);
         if (!el) {
             console.warn(
                 `[FSM] Contenedor no encontrado: #status-modelo-${ot}`,

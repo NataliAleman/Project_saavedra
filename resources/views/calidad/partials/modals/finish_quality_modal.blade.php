@@ -118,10 +118,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if(!form) return;
     const btn = document.getElementById("btn-submit-finalizar-calidad");
     
+    // Marcar los campos que originalmente son requeridos
+    const allRequired = form.querySelectorAll("input[required], select[required], textarea[required]");
+    allRequired.forEach(input => input.setAttribute("data-was-required", "true"));
+    
     function checkFinalizarValidity() {
         if(!btn) return;
         
-        let isValid = form.checkValidity();
+        let isValid = true;
+        const checkInputs = form.querySelectorAll("[data-was-required='true']");
+        
+        checkInputs.forEach(input => {
+            if (input.offsetParent === null) {
+                input.removeAttribute("required"); // Evitar error nativo de HTML5 en campos ocultos
+            } else {
+                input.setAttribute("required", "required");
+                if (!input.value.trim()) isValid = false;
+            }
+        });
         
         if (isValid) {
             btn.disabled = false;
@@ -137,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("input", checkFinalizarValidity);
     form.addEventListener("change", checkFinalizarValidity);
     
-    // Check periodically in case form fields are updated programmatically
     setInterval(checkFinalizarValidity, 500);
 });
 </script>

@@ -396,24 +396,33 @@ window.eliminarFilaPreOrden = function (btn) {
  * Función centralizada para calcular el código de modelo
  */
 function calculateModelCode(ot, nombreClase, tipoModelo = "") {
-    const siglas = {
-        Corona: "C",
-        "Cabeza de Soplo": "CS",
-        "Candado Obturador": "CO",
-        Obturador: "O",
-        Bombillo: "B",
-        Molde: "M",
-        Fondo: "F",
-        Guía: "G",
-        Guias: "G",
-        Guías: "G",
-        Pistón: "P",
-        Pistones: "P",
-        Plato: "PL",
-    };
+    const nameUpper = (nombreClase || "").toUpperCase();
+    let sigla = "X";
+
+    const mappings = [
+        { keys: ["MOLDE"], val: "M" },
+        { keys: ["BOMBILLO"], val: "B" },
+        { keys: ["FONDO"], val: "F" },
+        { keys: ["CORONA"], val: "C" },
+        { keys: ["CABEZA DE SOPLO", "CABEZA SOPLO"], val: "CS" },
+        { keys: ["CANDADO OBTURADOR", "CANDADO"], val: "CO" },
+        { keys: ["OBTURADOR"], val: "O" },
+        { keys: ["GUIA", "GUÍA"], val: "G" },
+        { keys: ["PISTON", "PISTÓN"], val: "P" },
+        { keys: ["PLATO"], val: "PL" },
+        { keys: ["EMBUDO"], val: "E" }
+    ];
+
+    for (const mapping of mappings) {
+        if (mapping.keys.some(key => nameUpper.includes(key))) {
+            sigla = mapping.val;
+            break;
+        }
+    }
+
     const matches = ot.match(/\d+/);
     const otNum = matches ? matches[0] : ot;
-    const sigla = siglas[nombreClase] || "X";
+    
     // Regla especial: Templadera → prefijo T en cualquier clase
     if (tipoModelo === "Templadera") {
         return `T${sigla}${otNum}`;
@@ -597,9 +606,7 @@ document
     });
 // ── Envío Pre-Orden 2 (ELIMINADO) ──
 function updateModelStatusUI(ot, status) {
-    const container =
-        document.getElementById(`status-modelo-${ot}`) ||
-        document.getElementById(`status-modelo-${ot.replace(/_R\d+$/i, "")}`);
+    const container = document.getElementById(`status-modelo-${ot}`);
     if (!container) return;
     let icon = "Recibido.png";
     let label = "Recibido";

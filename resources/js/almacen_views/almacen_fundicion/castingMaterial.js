@@ -61,9 +61,20 @@ window.generarHtmlCategorizadoCastingAprobados = function (
                     nombre.includes("escaneado")
                 );
             }
+            if (sec.tipos.includes("ayuda")) {
+                return tipo === "ayuda" || nombre.includes("ayuda_visual") || nombre.includes("ayudas_visuales") || nombre.includes("ayudas visuales");
+            }
             return sec.tipos.includes(tipo);
         });
-        if (archivosSeccion.length === 0) return;
+        if (archivosSeccion.length === 0) {
+            html += `<div style="width:100%;">
+                <h4 style="font-family:'Poppins',sans-serif;font-weight:700;color:#1e293b;font-size:1.05em;margin-top:10px;margin-bottom:12px;border-left:4px solid ${sec.color};padding-left:8px;">${sec.label}</h4>
+                <div style="text-align:center; color:#94a3b8; padding:8px; font-style:italic; font-size:0.85em; background:#fff; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                    No hay archivos en esta categoría.
+                </div>
+            </div>`;
+            return;
+        }
         html += `<div style="width:100%;">
             <h4 style="font-family:'Poppins',sans-serif;font-weight:700;color:#1e293b;font-size:1.05em;margin-top:10px;margin-bottom:12px;border-left:4px solid ${sec.color};padding-left:8px;">${sec.label}</h4>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;width:100%;box-sizing:border-box;">`;
@@ -182,15 +193,13 @@ window.cargarInputsCasting = function (ot, files) {
     const btnSubmit = document.getElementById("btn-submit-aprobados");
     const btnIr = document.getElementById("btn-ir-preorden-casting");
     if (btnSubmit) {
+        const textSpan = btnSubmit.querySelector("span");
         if (allLoaded) {
-            btnSubmit.classList.add("alm-display-none");
+            btnSubmit.classList.remove("alm-display-none");
+            if (textSpan) textSpan.innerText = "Procesar Aceptados";
         } else {
             btnSubmit.classList.remove("alm-display-none");
-            btnSubmit.disabled = false;
-            const textSpan = btnSubmit.querySelector("span");
-            if (textSpan) {
-                textSpan.innerText = "Procesar Aceptados";
-            }
+            if (textSpan) textSpan.innerText = "Subir Formatos y Continuar";
         }
     }
     if (btnIr) {

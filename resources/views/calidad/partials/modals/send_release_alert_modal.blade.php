@@ -20,7 +20,7 @@
 
         <div class="alm-modal-body cal-padding-3em-3-5em">
 
-            <form id="formEnviarAlertaLiberacion" enctype="multipart/form-data" >
+            <form id="formEnviarAlertaLiberacion" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="al-ot" name="ot" />
                 <input type="hidden" id="al-decision" name="decision" />
@@ -36,7 +36,8 @@
                         <span class="cal-color-9c0300">*</span>
                     </label>
                     <input type="date" id="al-fecha" name="fecha"
-                        class="form-control cal-font-family-quot cal-font-size-1-15em cal-padding-14px-20px cal-height-auto cal-border-radius-10px"  required/>
+                        class="form-control cal-font-family-quot cal-font-size-1-15em cal-padding-14px-20px cal-height-auto cal-border-radius-10px"
+                        required />
                 </div>
 
                 {{-- -•--•--•- LAYOUT DUAL: Aprobados (izq) + Rechazados (der) si hay ambos, o uno solo al 100%
@@ -52,7 +53,7 @@
                             {{-- Header Aprobados --}}
                             <div
                                 class="cal-background-linear-gradient-135deg-059669-047857 cal-padding-20px-24px cal-display-flex cal-align-items-center cal-gap-14px">
-                                <img src="{{ asset('images/Aprobado.png') }}"
+                                <img src="{{ asset('images/aprobado.png') }}"
                                     class="cal-width-36px cal-height-36px cal-object-fit-contain" alt="" />
                                 <div>
                                     <div
@@ -171,10 +172,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if(!form) return;
     const btn = document.getElementById("btn-submit-alerta-liberacion");
     
+    // Marcar los campos que originalmente son requeridos
+    const allRequired = form.querySelectorAll("input[required], select[required], textarea[required]");
+    allRequired.forEach(input => input.setAttribute("data-was-required", "true"));
+    
     function checkAlertaValidity() {
         if(!btn) return;
         
-        let isValid = form.checkValidity();
+        let isValid = true;
+        const checkInputs = form.querySelectorAll("[data-was-required='true']");
+        
+        checkInputs.forEach(input => {
+            if (input.offsetParent === null) {
+                input.removeAttribute("required");
+            } else {
+                input.setAttribute("required", "required");
+                if (!input.value.trim()) isValid = false;
+            }
+        });
         
         if (isValid) {
             btn.disabled = false;

@@ -698,25 +698,27 @@
                                         ];
 
                                         // --- NUEVO: ESCANEAR RUTAS DE PREORDENES FALTANTES ---
-                                        $preOrdenesCandidates = [
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/preordenes',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/PREORDENES',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/preordenes',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/PREORDENES',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/Documentos_Aprobados/preordenes',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/DOCUMENTOS_APROBADOS/PREORDENES',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/Documentos_Aprobados/preordenes',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/DOCUMENTOS_APROBADOS/PREORDENES',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes/documentos_aprobados',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes/documentos_aprobados',
-                                            'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/preordenes/documentos_aprobados',
-                                            'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/preordenes/documentos_aprobados',
-                                        ];
+                                        if ($otName === $reg->ot) {
+                                            $preOrdenesCandidates = [
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/preordenes',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/PREORDENES',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/preordenes',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/PREORDENES',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/Documentos_Aprobados/preordenes',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/DOCUMENTOS_APROBADOS/PREORDENES',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/Documentos_Aprobados/preordenes',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/DOCUMENTOS_APROBADOS/PREORDENES',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes/documentos_aprobados',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/ayudas_visuales/preordenes/documentos_aprobados',
+                                                'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/preordenes/documentos_aprobados',
+                                                'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/preordenes/documentos_aprobados',
+                                            ];
 
-                                        foreach ($preOrdenesCandidates as $poDir) {
-                                            $owner = strpos($poDir, 'ALMACEN_FUNDICION') !== false ? 'almacen' : 'calidad';
-                                            $newDirs[] = ['dir' => $poDir, 'origin' => 'aprobado', 'prefix' => 'preordenes/', 'owner' => $owner];
+                                            foreach ($preOrdenesCandidates as $poDir) {
+                                                $owner = strpos($poDir, 'ALMACEN_FUNDICION') !== false ? 'almacen' : 'calidad';
+                                                $newDirs[] = ['dir' => $poDir, 'origin' => 'aprobado', 'prefix' => 'preordenes/', 'owner' => $owner];
+                                            }
                                         }
 
                                         // --- NUEVO: ESCANEAR PREORDENES Y DOCUMENTOS POR CLASE (MAYÚSCULAS Y MINÚSCULAS) ---
@@ -729,109 +731,111 @@
                                             ]));
 
                                             foreach ($claseVariants as $cVariant) {
-                                                // Preordenes
-                                                foreach (['PREORDENES', 'Preordenes', 'Preordenes_Fundicion', 'preordenes'] as $pSub) {
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $pSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $pSub . '/',
-                                                        'owner' => 'almacen'
-                                                    ];
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $pSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $pSub . '/',
-                                                        'owner' => 'calidad'
-                                                    ];
-                                                }
-
-                                                // Documentos Aprobados
-                                                foreach (['DOCUMENTOS_APROBADOS', 'Documentos_Aprobados', 'documentos_aprobados'] as $dSub) {
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $dSub . '/',
-                                                        'owner' => 'almacen'
-                                                    ];
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $dSub . '/',
-                                                        'owner' => 'calidad'
-                                                    ];
-                                                    foreach (['Almacen', 'Calidad', 'ALMACEN', 'CALIDAD'] as $dept) {
+                                                if ($otName === $reg->ot) {
+                                                    // Preordenes
+                                                    foreach (['PREORDENES', 'Preordenes', 'Preordenes_Fundicion', 'preordenes'] as $pSub) {
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub . '/' . $dept,
+                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $pSub,
                                                             'origin' => 'aprobado',
-                                                            'prefix' => $cVariant . '/' . $dSub . '/' . $dept . '/',
+                                                            'prefix' => $cVariant . '/' . $pSub . '/',
                                                             'owner' => 'almacen'
                                                         ];
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub . '/' . $dept,
+                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $pSub,
                                                             'origin' => 'aprobado',
-                                                            'prefix' => $cVariant . '/' . $dSub . '/' . $dept . '/',
+                                                            'prefix' => $cVariant . '/' . $pSub . '/',
                                                             'owner' => 'calidad'
                                                         ];
                                                     }
-                                                }
 
-                                                // Documentos Rechazados
-                                                foreach (['DOCUMENTOS_RECHAZADOS', 'Documentos_Rechazados', 'documentos_rechazados'] as $rSub) {
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub,
-                                                        'origin' => 'rechazado',
-                                                        'prefix' => $cVariant . '/' . $rSub . '/',
-                                                        'owner' => 'almacen'
-                                                    ];
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub,
-                                                        'origin' => 'rechazado',
-                                                        'prefix' => $cVariant . '/' . $rSub . '/',
-                                                        'owner' => 'calidad'
-                                                    ];
-                                                    foreach (['Almacen', 'Calidad', 'ALMACEN', 'CALIDAD'] as $dept) {
+                                                    // Documentos Aprobados
+                                                    foreach (['DOCUMENTOS_APROBADOS', 'Documentos_Aprobados', 'documentos_aprobados'] as $dSub) {
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub . '/' . $dept,
-                                                            'origin' => 'rechazado',
-                                                            'prefix' => $cVariant . '/' . $rSub . '/' . $dept . '/',
+                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub,
+                                                            'origin' => 'aprobado',
+                                                            'prefix' => $cVariant . '/' . $dSub . '/',
                                                             'owner' => 'almacen'
                                                         ];
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub . '/' . $dept,
-                                                            'origin' => 'rechazado',
-                                                            'prefix' => $cVariant . '/' . $rSub . '/' . $dept . '/',
+                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub,
+                                                            'origin' => 'aprobado',
+                                                            'prefix' => $cVariant . '/' . $dSub . '/',
                                                             'owner' => 'calidad'
                                                         ];
+                                                        foreach (['Almacen', 'Calidad', 'ALMACEN', 'CALIDAD'] as $dept) {
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub . '/' . $dept,
+                                                                'origin' => 'aprobado',
+                                                                'prefix' => $cVariant . '/' . $dSub . '/' . $dept . '/',
+                                                                'owner' => 'almacen'
+                                                            ];
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $dSub . '/' . $dept,
+                                                                'origin' => 'aprobado',
+                                                                'prefix' => $cVariant . '/' . $dSub . '/' . $dept . '/',
+                                                                'owner' => 'calidad'
+                                                            ];
+                                                        }
                                                     }
-                                                }
 
-                                                // Documentos Escaneados
-                                                foreach (['ESCANEADOS', 'Escaneados', 'escaneados', 'DOCUMENTOS_ESCANEADOS', 'Documentos_Escaneados', 'documentos_escaneados'] as $eSub) {
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $eSub . '/',
-                                                        'owner' => 'almacen'
-                                                    ];
-                                                    $newDirs[] = [
-                                                        'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub,
-                                                        'origin' => 'aprobado',
-                                                        'prefix' => $cVariant . '/' . $eSub . '/',
-                                                        'owner' => 'calidad'
-                                                    ];
-                                                    foreach (['Almacen', 'Calidad'] as $dept) {
+                                                    // Documentos Rechazados
+                                                    foreach (['DOCUMENTOS_RECHAZADOS', 'Documentos_Rechazados', 'documentos_rechazados'] as $rSub) {
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub . '/' . $dept,
-                                                            'origin' => 'aprobado',
-                                                            'prefix' => $cVariant . '/' . $eSub . '/' . $dept . '/',
+                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub,
+                                                            'origin' => 'rechazado',
+                                                            'prefix' => $cVariant . '/' . $rSub . '/',
                                                             'owner' => 'almacen'
                                                         ];
                                                         $newDirs[] = [
-                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $cVariant . '/' . $eSub . '/' . $dept,
-                                                            'origin' => 'aprobado',
-                                                            'prefix' => $cVariant . '/' . $eSub . '/' . $dept . '/',
+                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub,
+                                                            'origin' => 'rechazado',
+                                                            'prefix' => $cVariant . '/' . $rSub . '/',
                                                             'owner' => 'calidad'
                                                         ];
+                                                        foreach (['Almacen', 'Calidad', 'ALMACEN', 'CALIDAD'] as $dept) {
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub . '/' . $dept,
+                                                                'origin' => 'rechazado',
+                                                                'prefix' => $cVariant . '/' . $rSub . '/' . $dept . '/',
+                                                                'owner' => 'almacen'
+                                                            ];
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $rSub . '/' . $dept,
+                                                                'origin' => 'rechazado',
+                                                                'prefix' => $cVariant . '/' . $rSub . '/' . $dept . '/',
+                                                                'owner' => 'calidad'
+                                                            ];
+                                                        }
+                                                    }
+
+                                                    // Documentos Escaneados
+                                                    foreach (['ESCANEADOS', 'Escaneados', 'escaneados', 'DOCUMENTOS_ESCANEADOS', 'Documentos_Escaneados', 'documentos_escaneados'] as $eSub) {
+                                                        $newDirs[] = [
+                                                            'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub,
+                                                            'origin' => 'aprobado',
+                                                            'prefix' => $cVariant . '/' . $eSub . '/',
+                                                            'owner' => 'almacen'
+                                                        ];
+                                                        $newDirs[] = [
+                                                            'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub,
+                                                            'origin' => 'aprobado',
+                                                            'prefix' => $cVariant . '/' . $eSub . '/',
+                                                            'owner' => 'calidad'
+                                                        ];
+                                                        foreach (['Almacen', 'Calidad'] as $dept) {
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/ALMACEN_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $eSub . '/' . $dept,
+                                                                'origin' => 'aprobado',
+                                                                'prefix' => $cVariant . '/' . $eSub . '/' . $dept . '/',
+                                                                'owner' => 'almacen'
+                                                            ];
+                                                            $newDirs[] = [
+                                                                'dir' => 'DOCUMENTACION_GIS/CALIDAD_FUNDICION/' . $otNameSanitized . '/' . $cVariant . '/' . $cVariant . '/' . $eSub . '/' . $dept,
+                                                                'origin' => 'aprobado',
+                                                                'prefix' => $cVariant . '/' . $eSub . '/' . $dept . '/',
+                                                                'owner' => 'calidad'
+                                                            ];
+                                                        }
                                                     }
                                                 }
 
@@ -940,7 +944,7 @@
                                         $otSanitizada = preg_replace('/[^\w\s\-]/', '', $otName);
                                         $otSanitizada = preg_replace('/[\s]+/', '_', trim($otSanitizada));
 
-                                        if (file_exists($liberacionesPath)) {
+                                        if (file_exists($liberacionesPath) && $otName === $reg->ot) {
                                             // Buscar LDM y RDM PDFs generados para ESTA OT en public/liberaciones_pdf
                                             $otLow = mb_strtolower($otSanitizada, 'UTF-8');
                                             $otNameLow = mb_strtolower($otName, 'UTF-8');
@@ -954,6 +958,13 @@
                                                 if (!str_contains($fileLower, $otLow) && !str_contains($fileLower, $otNameLow)) {
                                                     continue;
                                                 }
+
+                                                // FIX: Evitar que documentos de OTs de Reproceso (ej. _R1) se muestren en la OT original
+                                                $isReprocesoOT = (bool) preg_match('/_R\d+$/i', $otName);
+                                                if (!$isReprocesoOT && preg_match('/_R\d+\.pdf$/i', $base)) {
+                                                    continue; // Es un documento de un reproceso, omitir en la OT original
+                                                }
+
                                                 $knownClasses = ['candado obturador', 'cabeza de soplo', 'obturador', 'bombillo', 'embudo', 'corona', 'plato', 'molde', 'fondo', 'pistones', 'guías', 'guias'];
                                                 $hasKnownClass = false;
                                                 foreach ($knownClasses as $kc) {
@@ -1001,6 +1012,13 @@
                                             foreach (array_unique($scarFiles) as $f) {
                                                 $base = basename($f);
                                                 $fileLower = strtolower($base);
+                                                
+                                                // FIX: Evitar que documentos de OTs de Reproceso (ej. _R1) se muestren en la OT original
+                                                $isReprocesoOT = (bool) preg_match('/_R\d+$/i', $otName);
+                                                if (!$isReprocesoOT && preg_match('/_R\d+\.pdf$/i', $base)) {
+                                                    continue; // Es un documento de un reproceso, omitir en la OT original
+                                                }
+
                                                 $knownClasses = ['candado obturador', 'cabeza de soplo', 'obturador', 'bombillo', 'embudo', 'corona', 'plato', 'molde', 'fondo'];
                                                 $hasKnownClass = false;
                                                 foreach ($knownClasses as $kc) {
@@ -1519,158 +1537,15 @@
                                 // DEBUG MARKER
                                 echo "<!-- DEBUG OT: {$reg->ot}, estado: {$estado}, isFinalized: " . ($isFinalized ? 'true' : 'false') . ", isCalidadAlerted: " . ($isCalidadAlerted ? 'true' : 'false') . ", showControlCard: " . ($showControlCard ? 'true' : 'false') . " -->";
 
-
-
-                                $libStatus = $targetReg->calidad_revision_status ?? null;
-                                $fsmState = 'recibido';
-
-                                if ($libStatus === 'casting_aprobado') {
-                                    $icon = 'Proveedor.png';
-                                    $label = 'Enviado a Proveedor';
-                                    $fsmState = 'casting_aprobado';
-                                    $tooltip = 'Pre-orden de casting enviada al proveedor, proceso finalizado';
-                                    $borderColor = '#9333ea';
-                                    $bgColor = '#f3e8ff';
-                                    $textColor = '#9333ea';
-                                } elseif ($targetReg->casting_pdf_generated) {
-                                    $icon = 'pdf-view.png';
-                                    $label = 'Casting';
-                                    $fsmState = 'casting';
-                                    $tooltip = 'Pre-orden de casting generada, esperando envío';
-                                    $borderColor = '#059669';
-                                    $bgColor = '#f0fdf4';
-                                    $textColor = '#15803d';
-                                } elseif (in_array($libStatus, ['calidad_aprobado', 'calidad_parcial'])) {
-                                    $icon = 'Quality.png';
-                                    $label = 'Aprobado';
-                                    $fsmState = 'aprobado';
-                                    $tooltip = 'Modelo aprobado y liberado por Calidad';
-                                    $borderColor = '#10b981';
-                                    $bgColor = '#ecfdf5';
-                                    $textColor = '#047857';
-                                } elseif ($libStatus === 'calidad_rechazado') {
-                                    $icon = 'Quality.png';
-                                    $label = 'Rechazado';
-                                    $fsmState = 'rechazado';
-                                    $tooltip = 'Modelo rechazado por Calidad debido a desviaciones';
-                                    $borderColor = '#ef4444';
-                                    $bgColor = '#fef2f2';
-                                    $textColor = '#b91c1c';
-                                } elseif ($libStatus === 'calidad_mixto') {
-                                    $icon = 'Quality.png';
-                                    $label = 'Mixto';
-                                    $fsmState = 'mixto';
-                                    $tooltip = 'Liberación mixta por Calidad (clases aprobadas y rechazadas)';
-                                    $borderColor = '#eab308';
-                                    $bgColor = '#fef9c3';
-                                    $textColor = '#854d0e';
-                                } elseif (in_array($libStatus, ['pendiente', 'aprobado', 'rechazado', 'mixto'])) {
-                                    $icon = 'Revisando.png';
-                                    $label = 'En Revisión';
-                                    $fsmState = 'revisando';
-                                    $tooltip = 'Calidad está realizando la revisión del modelo';
-                                    $borderColor = '#f59e0b';
-                                    $bgColor = '#fffbeb';
-                                    $textColor = '#b45309';
-                                } elseif ($targetReg->pre_orden_email_sent) {
-                                    if (in_array(Auth::user()->perfil, [1, 3, 4])) {
-                                        $icon = 'Recibido.png';
-                                        $label = 'Nuevo';
-                                        $fsmState = 'recibido';
-                                        $tooltip = 'Pre-orden de fabricación de modelo recibida, esperando revisión de Calidad';
-                                        $borderColor = '#cbd5e1';
-                                        $bgColor = '#f1f5f9';
-                                        $textColor = '#64748b';
-                                    } else {
-                                        if (!$targetReg->isAlmacenFullyProcessed()) {
-                                            $icon = 'Revisando.png';
-                                            $label = 'Proceso Parcial';
-                                            $fsmState = 'revisando';
-                                            $tooltip = 'Pre-orden parcial enviada, esperando clases restantes o revisión';
-                                            $borderColor = '#f59e0b';
-                                            $bgColor = '#fffbeb';
-                                            $textColor = '#b45309';
-                                        } else {
-                                            $icon = 'enviando.png';
-                                            $label = 'Correo Enviado';
-                                            $fsmState = 'correo_enviado';
-                                            $tooltip = 'Pre-orden enviada por correo electrónico, esperando revisión de Calidad';
-                                            $borderColor = '#818cf8';
-                                            $bgColor = '#e0e7ff';
-                                            $textColor = '#4f46e5';
-                                        }
-                                    }
-                                } elseif ($targetReg->pre_orden_sent) {
-                                    if (!$targetReg->isAlmacenFullyProcessed()) {
-                                        $icon = 'Revisando.png';
-                                        $label = 'Proceso Parcial';
-                                        $fsmState = 'revisando';
-                                        $tooltip = 'Pre-orden parcial generada, esperando procesar el resto de las clases';
-                                        $borderColor = '#f59e0b';
-                                        $bgColor = '#fffbeb';
-                                        $textColor = '#b45309';
-                                    } else {
-                                        $icon = 'pdf-view.png';
-                                        $label = 'Pre-Orden';
-                                        $fsmState = 'pre_orden';
-                                        $tooltip = 'Pre-orden de modelo generada y guardada, pendiente de enviar';
-                                        $borderColor = '#60a5fa';
-                                        $bgColor = '#eff6ff';
-                                        $textColor = '#2563eb';
-                                    }
-                                } elseif ($targetReg->tiene_modelo) {
-                                    if (!$targetReg->isAlmacenFullyProcessed()) {
-                                        $icon = 'Revisando.png';
-                                        $label = 'Proceso Parcial';
-                                        $fsmState = 'revisando';
-                                        $tooltip = 'Clases parciales indicadas con modelo físico, esperando las demás';
-                                        $borderColor = '#f59e0b';
-                                        $bgColor = '#fffbeb';
-                                        $textColor = '#b45309';
-                                    } else {
-                                        $icon = 'Espera.png';
-                                        $label = 'Tengo Modelo';
-                                        $fsmState = 'tiene_modelo';
-                                        $tooltip = 'Modelo físico disponible en Almacén, en espera de revisión por Calidad';
-                                        $borderColor = '#0ea5e9';
-                                        $bgColor = '#f0f9ff';
-                                        $textColor = '#0369a1';
-                                    }
-                                } elseif ($reg->rechazos_procesados) {
-                                    if (count($aprobados) > 0) {
-                                        $icon = 'Quality.png';
-                                        $label = 'Aprobado';
-                                        $fsmState = 'aprobado';
-                                        $tooltip = 'Clases aprobadas se conservan en este registro';
-                                        $borderColor = '#10b981';
-                                        $bgColor = '#ecfdf5';
-                                        $textColor = '#047857';
-                                    } else {
-                                        $icon = 'Rechazado.png';
-                                        $label = 'Rechazado';
-                                        $fsmState = 'rechazado';
-                                        $tooltip = 'Retornado hacia un nuevo ciclo de modelo (Reproceso)';
-                                        $borderColor = '#dc2626';
-                                        $bgColor = '#fef2f2';
-                                        $textColor = '#b91c1c';
-                                    }
-                                } elseif ($isReproceso && in_array($libStatus, [null, 'pendiente']) && !$targetReg->tiene_modelo && !$targetReg->pre_orden_sent && !$targetReg->pre_orden_email_sent) {
-                                    $icon = 'Rechazado.png';
-                                    $label = 'Rechazado';
-                                    $fsmState = 'rechazado';
-                                    $tooltip = 'Reproceso por rechazo de Calidad';
-                                    $borderColor = '#dc2626';
-                                    $bgColor = '#fef2f2';
-                                    $textColor = '#b91c1c';
-                                } else {
-                                    $icon = 'Recibido.png';
-                                    $label = 'Nuevo';
-                                    $fsmState = 'recibido';
-                                    $tooltip = 'Alerta inicial recibida, pendiente de procesar modelo por Almacén';
-                                    $borderColor = '#cbd5e1';
-                                    $bgColor = '#f1f5f9';
-                                    $textColor = '#64748b';
-                                }
+                                $estadoConfig = \App\Services\FundicionStateService::resolverEstadoOT($reg, $targetReg, $aprobados, $esReproceso);
+                                
+                                $fsmState = $estadoConfig['fsmState'];
+                                $icon = $estadoConfig['icon'];
+                                $label = $estadoConfig['label'];
+                                $tooltip = $estadoConfig['tooltip'];
+                                $borderColor = $estadoConfig['borderColor'];
+                                $bgColor = $estadoConfig['bgColor'];
+                                $textColor = $estadoConfig['textColor'];
                             @endphp
                             @php
                                 $pendingChanges = is_string($reg->pending_almacen_changes) ? json_decode($reg->pending_almacen_changes, true) : ($reg->pending_almacen_changes ?? []);

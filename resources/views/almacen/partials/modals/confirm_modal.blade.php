@@ -135,7 +135,7 @@
                             </h4>
 
                             <div id="cm-server-files-container"
-                                style="background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; flex: 1; max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                                style="background: #f0f7ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 12px; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
                                 <div
                                     class="alm-spinner alm-border-top-color-0284c7 alm-display-block alm-margin-10px-auto">
                                 </div>
@@ -152,7 +152,7 @@
                             </h4>
 
                             <div id="cm-archivos-list"
-                                style="background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; flex: 1; max-height: 250px; min-height: 140px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;">
+                                style="background: #f0fdf4; border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start;">
                             </div>
                         </div>
 

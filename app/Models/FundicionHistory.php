@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\FundicionEstadoFlujo;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @property int         $id
@@ -39,6 +41,7 @@ class FundicionHistory extends Model
         'ayudas_config',
         'clases_enviadas',
         'pending_almacen_changes',
+        'estado_flujo',
         'status',
         'alert_sent_at',
         'almacen_archivos',
@@ -58,6 +61,7 @@ class FundicionHistory extends Model
     ];
 
     protected $casts = [
+        'estado_flujo'                   => FundicionEstadoFlujo::class,
         'alert_sent_at'                  => 'datetime',
         'almacen_archivos'               => 'array',
         'ayudas_config'                  => 'array',
@@ -99,6 +103,54 @@ class FundicionHistory extends Model
                     }
                 }
                 $history->clases_enviadas = $nuevoEnviadas;
+            }
+
+            // Auto-deducir estado_flujo si es que hay un cambio en los flags y NO se actualizó manualmente
+            if (!$history->isDirty('estado_flujo')) {
+                $nuevoEstado = null;
+                $libStatus = $history->calidad_revision_status;
+                
+                if ($libStatus === \App\Services\FundicionStateConstants::CASTING_APROBADO) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::CASTING_APROBADO;
+                } elseif ($history->casting_pdf_generated) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::CASTING;
+                } elseif (in_array($libStatus, [\App\Services\FundicionStateConstants::CALIDAD_APROBADO, \App\Services\FundicionStateConstants::CALIDAD_PARCIAL])) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::APROBADO;
+                } elseif ($libStatus === \App\Services\FundicionStateConstants::CALIDAD_RECHAZADO) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::RECHAZADO;
+                } elseif ($libStatus === \App\Services\FundicionStateConstants::CALIDAD_MIXTO) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::MIXTO;
+                } elseif (in_array($libStatus, ['pendiente', 'aprobado', 'rechazado', 'mixto'])) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::REVISANDO;
+                } elseif ($history->pre_orden_email_sent) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::CORREO_ENVIADO;
+                } elseif ($history->pre_orden_sent) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::PRE_ORDEN;
+                } elseif ($history->tiene_modelo) {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::TIENE_MODELO;
+                } else {
+                    $nuevoEstado = \App\Enums\FundicionEstadoFlujo::NUEVO;
+                }
+
+                if ($nuevoEstado && $nuevoEstado->value !== ($history->getOriginal('estado_flujo')?->value ?? null)) {
+                    $history->estado_flujo = $nuevoEstado;
+                }
+            }
+        });
+
+        static::saved(function ($history) {
+            if ($history->wasChanged('estado_flujo')) {
+                $oldState = $history->getOriginal('estado_flujo')?->value;
+                $newState = $history->estado_flujo?->value;
+
+                if ($oldState !== $newState) {
+                    $history->stateLogs()->create([
+                        'estado_anterior' => $oldState,
+                        'estado_nuevo' => $newState,
+                        'user_id' => Auth::id(),
+                        'reason' => 'Auto-generado por cambio en historial',
+                    ]);
+                }
             }
         });
     }
@@ -175,5 +227,42 @@ class FundicionHistory extends Model
         }
 
         return count($otClasesActivas) > 0 && count($clasesActivasFaltantes) === 0;
+    }
+
+    public function stateLogs()
+    {
+        return $this->hasMany(FundicionStateLog::class, 'ot_id');
+    }
+
+    /**
+     * Transiciona el estado actual de la OT, validando y guardando un log.
+     *
+     * @param FundicionEstadoFlujo|string $newState El nuevo estado a transicionar
+     * @param string|null $reason Justificación de la transición
+     */
+    public function transitionTo($newState, ?string $reason = null): void
+    {
+        if (is_string($newState)) {
+            $newState = FundicionEstadoFlujo::tryFrom($newState);
+            if (!$newState) {
+                throw new \InvalidArgumentException("Estado FSM inválido");
+            }
+        }
+
+        $oldState = $this->estado_flujo ? $this->estado_flujo->value : null;
+        
+        // Aquí podríamos validar guards si es necesario, 
+        // pero por ahora solo hacemos la transición y log.
+        if ($oldState !== $newState->value) {
+            $this->estado_flujo = $newState;
+            $this->save();
+
+            $this->stateLogs()->create([
+                'estado_anterior' => $oldState,
+                'estado_nuevo' => $newState->value,
+                'user_id' => Auth::id(),
+                'reason' => $reason,
+            ]);
+        }
     }
 }

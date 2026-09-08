@@ -4390,7 +4390,8 @@ class AlmacenFundicionController extends Controller
                 $allAlmacenFiles = Storage::disk('local')->allFiles($resolvedCandidato);
                 Log::debug('[checkPendingChanges]  -> files found: ' . count($allAlmacenFiles));
                 foreach ($allAlmacenFiles as $f) {
-                    if (strtolower(pathinfo($f, PATHINFO_EXTENSION)) !== 'pdf') {
+                    $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['pdf', 'dwg'])) {
                         continue;
                     }
                     $filename = basename($f);
@@ -4434,6 +4435,13 @@ class AlmacenFundicionController extends Controller
                     $fileNameLower = strtolower($fileName);
                     if (str_contains($fileNameLower, '_anterior_n'))
                         continue;
+                        
+                    // FIX: Evitar que documentos de OTs de Reproceso (ej. _R1) se muestren en la OT original
+                    $isReprocesoOT = (bool) preg_match('/_R\d+$/i', $ot);
+                    if (!$isReprocesoOT && preg_match('/_R\d+\.pdf$/i', $fileName)) {
+                        continue; // Es un documento de un reproceso, omitir en la OT original
+                    }
+
                     if (str_ends_with($fileNameLower, '.pdf') && str_contains($fileNameLower, $claseNorm) && (str_contains($fileNameLower, $otSanitizada) || str_contains($fileNameLower, strtolower($ot)))) {
                         $afectadosList[] = [
                             'nombre' => $fileName,
@@ -4465,6 +4473,12 @@ class AlmacenFundicionController extends Controller
                         $bNameLow = strtolower($bName);
                         if (str_contains($bNameLow, '_anterior_n'))
                             continue;
+                            
+                        // FIX: Evitar que documentos de OTs de Reproceso (ej. _R1) se muestren en la OT original
+                        $isReprocesoOT = (bool) preg_match('/_R\d+$/i', $ot);
+                        if (!$isReprocesoOT && preg_match('/_R\d+\.pdf$/i', $bName)) {
+                            continue; // Es un documento de un reproceso, omitir en la OT original
+                        }
 
                         if (str_contains($bNameLow, $claseNorm)) {
                             $dirNorm = str_replace('\\', '/', $resolvedCand);
@@ -4500,7 +4514,8 @@ class AlmacenFundicionController extends Controller
                 }
                 $files = Storage::disk('local')->allFiles($resolvedIng);
                 foreach ($files as $f) {
-                    if (strtolower(pathinfo($f, PATHINFO_EXTENSION)) !== 'pdf') {
+                    $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['pdf', 'dwg'])) {
                         continue;
                     }
                     $filename = basename($f);

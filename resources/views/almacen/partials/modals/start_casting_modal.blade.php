@@ -88,7 +88,7 @@
 
                     <div class="form-actions"
                         style="text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <button type="submit" class="btn-save-preorden" id="btn-submit-aprobados"
+                        <button type="submit" class="btn-save-preorden" id="btn-submit-aprobados" disabled
                             style="font-size:0.95em; padding:10px 28px; border-radius:10px; font-family:'Poppins',sans-serif; font-weight: 700; height: auto; background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 15px rgba(22,163,74,0.35); display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; color: white; cursor: pointer;">
                             <span>Procesar Aceptados</span>
                         </button>
@@ -154,7 +154,7 @@
 
                     <div class="form-actions"
                         style="text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <button type="submit" class="btn-save-preorden" id="btn-submit-rechazados"
+                        <button type="submit" class="btn-save-preorden" id="btn-submit-rechazados" disabled
                             style="font-size:0.95em; padding:10px 28px; border-radius:10px; font-family:'Poppins',sans-serif; font-weight: 700; height: auto; background: linear-gradient(135deg, #dc2626, #b91c1c); box-shadow: 0 4px 15px rgba(220,38,38,0.35); display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: none; color: white; cursor: pointer;">
                             <span>Subir Formatos y Generar Pre-Orden de Modelo</span>
                         </button>
@@ -164,3 +164,56 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    function checkFormValidity(formId, btnId) {
+        const form = document.getElementById(formId);
+        const btn = document.getElementById(btnId);
+        if(!form || !btn) return;
+        
+        let isValid = true;
+        // Seleccionamos tanto los que tienen required activo como los que marcamos nosotros
+        const checkInputs = form.querySelectorAll("input[required], select[required], textarea[required], [data-was-required='true']");
+        
+        checkInputs.forEach(input => {
+            // Asegurarnos de que esté marcado
+            if (!input.hasAttribute("data-was-required")) {
+                input.setAttribute("data-was-required", "true");
+            }
+
+            if (input.offsetParent === null) {
+                // Si está oculto, quitar required para que no bloquee HTML5 nativo
+                input.removeAttribute("required");
+            } else {
+                // Si está visible, regresar required y validar su valor
+                input.setAttribute("required", "required");
+                
+                if (input.type === 'file') {
+                    if (!input.value && input.files.length === 0) isValid = false;
+                } else if (input.type === 'checkbox' || input.type === 'radio') {
+                    if (!input.checked) isValid = false;
+                } else {
+                    if (!input.value.trim()) isValid = false;
+                }
+            }
+        });
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    // Intervalo para revisar ambos formularios constantemente, 
+    // útil porque los inputs de archivos se inyectan dinámicamente con AJAX
+    setInterval(() => {
+        checkFormValidity("formMgvAprobados", "btn-submit-aprobados");
+        checkFormValidity("formMgvRechazados", "btn-submit-rechazados");
+    }, 500);
+});
+</script>

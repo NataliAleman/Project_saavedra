@@ -142,6 +142,9 @@ window.abrirModalGestionVeredicto = function (ot, aprobados, rechazados) {
                     );
                     return archivosList.filter((f) => {
                         const nombre = (f.nombre || "").toLowerCase();
+                        if (nombre.includes("ayuda_visual") || nombre.includes("ayudas_visuales") || nombre.includes("ayudas visuales") || (f.tipo || "").toLowerCase() === "ayuda") {
+                            return true;
+                        }
                         const clasesEnNombre = clasesMonitoreadas.filter((c) =>
                             window.compararClasesSurgico(nombre, c),
                         );
