@@ -24,7 +24,7 @@
         <div class="alm-modal-body cal-padding-1em-1-6em-1-2em-1-6em cal-background-fafafa cal-font-family-quot"
             style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
 
-            <form id="formFinalizarCalidad" enctype="multipart/form-data" novalidate
+            <form id="formFinalizarCalidad" enctype="multipart/form-data" 
                 style="display: flex; flex-direction: column; flex: 1; min-height: 0;"
                 data-email-almacen="{{ env('EMAIL_ALMACEN', 'almacentec@grupoindsaavedra.com') }}"
                 data-email-calidad="{{ env('EMAIL_CALIDAD', 'inspecciontec@grupoindsaavedra.com') }}">
@@ -54,7 +54,7 @@
                                 style="font-weight: 700; color: #334155; display: block; margin-bottom: 2px; font-size: 0.84em;">Notificar
                                 a Almacén:</label>
                             <input type="text" id="fc-destinatario" name="destinatario" class="form-control"
-                                style="font-size: 0.84em; padding: 6px 10px; height: auto;" />
+                                style="font-size: 0.84em; padding: 6px 10px; height: auto;"  required/>
                             <span style="font-size: 0.75em; color: #64748b; margin-top: 2px; display: block;">Separa
                                 correos con comas.</span>
                         </div>
@@ -64,7 +64,7 @@
                                 style="font-weight: 700; color: #334155; display: block; margin-bottom: 2px; font-size: 0.84em;">Notificar
                                 a Calidad:</label>
                             <input type="text" id="fc-destinatario-calidad" name="destinatario_calidad"
-                                class="form-control" style="font-size: 0.84em; padding: 6px 10px; height: auto;" />
+                                class="form-control" style="font-size: 0.84em; padding: 6px 10px; height: auto;"  required/>
                         </div>
 
                         <div class="form-group cal-margin-bottom-10px">
@@ -72,7 +72,7 @@
                                 style="font-weight: 700; color: #334155; display: block; margin-bottom: 2px; font-size: 0.84em;">Fecha
                                 de Finalización <span class="cal-color-dc2626">*</span>:</label>
                             <input type="date" id="fc-fecha" name="fecha" class="form-control"
-                                style="font-size: 0.84em; padding: 6px 10px; height: auto;" />
+                                style="font-size: 0.84em; padding: 6px 10px; height: auto;"  required/>
                         </div>
                     </div>
 
@@ -102,7 +102,7 @@
 
                 <div class="form-actions cal-text-align-center"
                     style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; flex-shrink: 0;">
-                    <button type="submit" id="btn-submit-finalizar-calidad"
+                    <button type="submit" id="btn-submit-finalizar-calidad" disabled
                         class="btn-save-preorden cal-font-size-1em cal-padding-10px-36px cal-border-radius-10px cal-font-weight-700"
                         style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                         Finalizar y Enviar Correo
@@ -112,3 +112,32 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formFinalizarCalidad");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-finalizar-calidad");
+    
+    function checkFinalizarValidity() {
+        if(!btn) return;
+        
+        let isValid = form.checkValidity();
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkFinalizarValidity);
+    form.addEventListener("change", checkFinalizarValidity);
+    
+    // Check periodically in case form fields are updated programmatically
+    setInterval(checkFinalizarValidity, 500);
+});
+</script>

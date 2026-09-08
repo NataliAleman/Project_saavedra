@@ -78,7 +78,7 @@
                     </div>
 
                     <div class="form-actions alm-margin-top-30px alm-text-align-center">
-                        <button type="submit" class="btn-save-preorden" id="btn-submit-preorden">
+                        <button type="submit" class="btn-save-preorden" id="btn-submit-preorden" disabled>
                             Guardar y Descargar Pre-Orden (Fase 1)
                         </button>
                     </div>
@@ -89,3 +89,34 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formPreOrden");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-preorden");
+    const tbody = document.getElementById("alm-tbody-preorden");
+    
+    function checkFormValidity() {
+        if(!btn) return;
+        const hasRows = tbody && tbody.querySelectorAll("tr").length > 0;
+        const isValid = form.checkValidity();
+        
+        if (isValid && hasRows) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkFormValidity);
+    form.addEventListener("change", checkFormValidity);
+    
+    // Check periodically in case rows are added/removed dynamically
+    setInterval(checkFormValidity, 500);
+});
+</script>

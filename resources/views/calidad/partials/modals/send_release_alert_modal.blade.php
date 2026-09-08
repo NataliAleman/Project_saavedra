@@ -20,7 +20,7 @@
 
         <div class="alm-modal-body cal-padding-3em-3-5em">
 
-            <form id="formEnviarAlertaLiberacion" enctype="multipart/form-data" novalidate>
+            <form id="formEnviarAlertaLiberacion" enctype="multipart/form-data" >
                 @csrf
                 <input type="hidden" id="al-ot" name="ot" />
                 <input type="hidden" id="al-decision" name="decision" />
@@ -36,7 +36,7 @@
                         <span class="cal-color-9c0300">*</span>
                     </label>
                     <input type="date" id="al-fecha" name="fecha"
-                        class="form-control cal-font-family-quot cal-font-size-1-15em cal-padding-14px-20px cal-height-auto cal-border-radius-10px" />
+                        class="form-control cal-font-family-quot cal-font-size-1-15em cal-padding-14px-20px cal-height-auto cal-border-radius-10px"  required/>
                 </div>
 
                 {{-- -•--•--•- LAYOUT DUAL: Aprobados (izq) + Rechazados (der) si hay ambos, o uno solo al 100%
@@ -156,7 +156,7 @@
 
                 {{-- fin dual-layout --}}
                 <div class="form-actions cal-text-align-center cal-margin-top-40px cal-margin-bottom-12px">
-                    <button type="submit" id="btn-submit-alerta-liberacion"
+                    <button type="submit" id="btn-submit-alerta-liberacion" disabled
                         class="btn-save-preorden cal-font-size-1-2em cal-padding-15px-32px cal-border-radius-10px cal-font-family-quot cal-font-weight-700 cal-height-auto">
                         Enviar Alerta de Liberación
                     </button>
@@ -165,3 +165,31 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formEnviarAlertaLiberacion");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-alerta-liberacion");
+    
+    function checkAlertaValidity() {
+        if(!btn) return;
+        
+        let isValid = form.checkValidity();
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkAlertaValidity);
+    form.addEventListener("change", checkAlertaValidity);
+    
+    setInterval(checkAlertaValidity, 500);
+});
+</script>

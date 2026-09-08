@@ -89,7 +89,8 @@ window.abrirModalEnviarPreOrden = function (ot, tipo, clasesFaltantes = null) {
                     if (clasesFaltantes && Array.isArray(clasesFaltantes) && clasesFaltantes.length > 0) {
                         archivosAMostrar = archivosAMostrar.filter((f) => {
                             const n = (f.nombre || "").toLowerCase();
-                            return clasesFaltantes.some((clase) => window.compararClasesSurgico(n, clase));
+                            const esAyudaOPreOrden = f.tipo === "ayuda" || n.includes("ayudas_visuales") || n.includes("pre-orden") || n.includes("preorden") || n.includes("f_ccl_ldm") || n.includes("confirmacionmodelo");
+                            return esAyudaOPreOrden || clasesFaltantes.some((clase) => window.compararClasesSurgico(n, clase));
                         });
                     }
                 }

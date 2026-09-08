@@ -104,7 +104,7 @@
 
                     {{-- Boton de Envio --}}
                     <div class="form-actions cal-text-align-center cal-margin-top-20px">
-                        <button type="submit"
+                        <button type="submit" id="btn-submit-scar" disabled
                             class="btn-lib-send cal-background-linear-gradient-135deg-9c0300-7a0200 cal-box-shadow-0-4px-15px-rgba-156-3-0-0-3">
                             Enviar Alerta SCAR al Proveedor
                         </button>
@@ -113,3 +113,31 @@
             </div>
         </div>
     </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formEnviarScar");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-scar");
+    
+    function checkScarValidity() {
+        if(!btn) return;
+        
+        let isValid = form.checkValidity();
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkScarValidity);
+    form.addEventListener("change", checkScarValidity);
+    
+    setInterval(checkScarValidity, 500);
+});
+</script>

@@ -36,7 +36,7 @@
             {{-- ─────────────────────────────────────────────── --}}
             <div id="mgv-view-aprobados" class="mgv-view"
                 style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
-                <form id="formMgvAprobados" enctype="multipart/form-data" novalidate autocomplete="off"
+                <form id="formMgvAprobados" enctype="multipart/form-data"  autocomplete="off"
                     style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
                     @csrf
                     <input type="hidden" name="ot" class="mgv-form-ot">
@@ -101,7 +101,7 @@
             {{-- ─────────────────────────────────────────────── --}}
             <div id="mgv-view-rechazados" class="mgv-view alm-display-none cal-display-none"
                 style="display: none; flex-direction: column; flex: 1; min-height: 0;">
-                <form id="formMgvRechazados" enctype="multipart/form-data" novalidate autocomplete="off"
+                <form id="formMgvRechazados" enctype="multipart/form-data"  autocomplete="off"
                     style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
                     @csrf
                     <input type="hidden" name="ot" class="mgv-form-ot">

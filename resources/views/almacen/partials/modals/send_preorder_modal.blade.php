@@ -53,7 +53,7 @@
                                         a Calidad:</label>
                                     <input type="text" id="env-destinatario-calidad" name="destinatario_calidad"
                                         class="form-control"
-                                        style="font-size: 0.84em; padding: 6px 10px; height: auto;">
+                                        style="font-size: 0.84em; padding: 6px 10px; height: auto;" required>
                                 </div>
                             </div>
 
@@ -131,7 +131,7 @@
 
                 <div class="form-actions"
                     style="text-align: center; margin-top: 10px; padding-top: 8px; flex-shrink: 0;">
-                    <button type="submit" id="btn-submit-envio" class="btn-save-preorden"
+                    <button type="submit" id="btn-submit-envio" class="btn-save-preorden" disabled
                         style="background: linear-gradient(135deg, #033966, #022340); box-shadow: 0 4px 15px rgba(3, 57, 102, 0.35); padding: 11px 44px; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 1.05em; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
                         Enviar Correo con Adjuntos
                     </button>
@@ -140,3 +140,42 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formEnviarPreOrden");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-envio");
+    
+    function checkEnvioValidity() {
+        if(!btn) return;
+        
+        let isValid = form.checkValidity();
+        
+        // Verificar que hay al menos una pre-orden seleccionada
+        const pendingChecked = form.querySelectorAll('input[name="pre_orden_ids[]"]:checked').length > 0;
+        if (!pendingChecked) isValid = false;
+        
+        // Verificar que hay al menos un archivo adjunto (ya sea de los disponibles en el servidor o subidos)
+        const serverFilesChecked = form.querySelectorAll('input[name="archivos_seleccionados[]"]:checked').length > 0;
+        const adicionalesCount = window.adicionalesSelectedFiles ? window.adicionalesSelectedFiles.length : 0;
+        
+        if (!serverFilesChecked && adicionalesCount === 0) isValid = false;
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkEnvioValidity);
+    form.addEventListener("change", checkEnvioValidity);
+    
+    // Check periodically in case files are loaded dynamically or checkmarks changed by JS
+    setInterval(checkEnvioValidity, 500);
+});
+</script>

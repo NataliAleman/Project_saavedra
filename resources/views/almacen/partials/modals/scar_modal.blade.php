@@ -212,7 +212,7 @@
                         <div id="scar-accion-otro-text-group" class="alm-display-none cal-display-none"
                             style="margin-top: 4px; padding-left: 24px;">
                             <input type="text" id="scar-accion-otro-texto" name="accion_otro_texto" class="form-control"
-                                placeholder="Escriba la acción correctiva inmediata requerida...">
+                                placeholder="Escriba la acción correctiva inmediata requerida..." required>
                         </div>
                     </div>
                 </div>
@@ -245,7 +245,7 @@
                                 Código del Modelo:
                             </label>
                             <input type="text" id="scar-codigo-modelo" name="codigo_modelo" class="form-control"
-                                placeholder="Código de referencia del modelo">
+                                placeholder="Código de referencia del modelo" required>
                         </div>
                     </div>
                 </div>

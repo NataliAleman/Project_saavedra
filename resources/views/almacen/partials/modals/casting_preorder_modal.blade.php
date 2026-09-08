@@ -33,7 +33,7 @@
 
         {{-- CUERPO DEL MODAL --}}
         <div class="alm-modal-body alm-padding-2-5em alm-background-fafafa alm-font-family-Poppins-sans-serif" style="background: #f8fafc; padding: 2em 2.5em;">
-            <form id="formPreOrdenCasting" novalidate autocomplete="off">
+            <form id="formPreOrdenCasting" autocomplete="off">
                 @csrf
                 <input type="hidden" id="poc-has-page2" name="has_page2" value="0">
 
@@ -42,7 +42,7 @@
                     <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 25px; background: #ffffff; padding: 20px 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                         <div class="form-group">
                             <label for="poc-p1-proveedor" style="font-weight: 700; color: #0f172a; font-size: 0.95em; margin-bottom: 8px; display: block;">Proveedor <span style="color: #dc2626;">*</span>:</label>
-                            <select id="poc-p1-proveedor" name="page1_proveedor" onchange="handlePocProveedorChange(1)" class="form-control" style="width: 100%; height: 44px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid #0284c7; font-family: 'Poppins', sans-serif; font-size: 0.95em; color: #0f172a; background: #ffffff; box-shadow: 0 2px 4px rgba(2,132,199,0.05);">
+                            <select id="poc-p1-proveedor" name="page1_proveedor" onchange="handlePocProveedorChange(1)" class="form-control" style="width: 100%; height: 44px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid #0284c7; font-family: 'Poppins', sans-serif; font-size: 0.95em; color: #0f172a; background: #ffffff; box-shadow: 0 2px 4px rgba(2,132,199,0.05);" required>
                                 <option value="" disabled selected>-- Selecciona un proveedor --</option>
                                 <option value="SS Metal Foundry, S. de R. L. de C. V.">SS Metal Foundry, S. de R. L. de C. V.</option>
                                 <option value="SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS">SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS</option>
@@ -106,7 +106,7 @@
                     <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 25px; background: #ffffff; padding: 20px 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
                         <div class="form-group">
                             <label for="poc-p2-proveedor" style="font-weight: 700; color: #0f172a; font-size: 0.95em; margin-bottom: 8px; display: block;">Proveedor 2 <span style="color: #dc2626;">*</span>:</label>
-                            <select id="poc-p2-proveedor" name="page2_proveedor" onchange="handlePocProveedorChange(2)" class="form-control" style="width: 100%; height: 44px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid #0284c7; font-family: 'Poppins', sans-serif; font-size: 0.95em; color: #0f172a; background: #ffffff;">
+                            <select id="poc-p2-proveedor" name="page2_proveedor" onchange="handlePocProveedorChange(2)" class="form-control" style="width: 100%; height: 44px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid #0284c7; font-family: 'Poppins', sans-serif; font-size: 0.95em; color: #0f172a; background: #ffffff;" required>
                                 <option value="" disabled selected>-- Selecciona un proveedor --</option>
                                 <option value="SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS">SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS</option>
                                 <option value="SS Metal Foundry, S. de R. L. de C. V.">SS Metal Foundry, S. de R. L. de C. V.</option>
@@ -167,7 +167,7 @@
 
                 {{-- BOTÓN DE GUARDAR GLOBAL --}}
                 <div class="form-actions" style="margin-top: 35px; text-align: center;">
-                    <button type="submit" id="btn-submit-poc" class="btn-save-preorden" style="font-size: 1.15em; padding: 16px 42px; border-radius: 14px; font-family: 'Poppins', sans-serif; font-weight: 700; background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); border: none; color: #ffffff; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(3, 105, 161, 0.35); height: auto; letter-spacing: 0.5px;">
+                    <button type="submit" id="btn-submit-poc" class="btn-save-preorden" disabled style="font-size: 1.15em; padding: 16px 42px; border-radius: 14px; font-family: 'Poppins', sans-serif; font-weight: 700; background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); border: none; color: #ffffff; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(3, 105, 161, 0.35); height: auto; letter-spacing: 0.5px;">
                         <i class="fas fa-file-pdf" style="margin-right: 8px;"></i> Guardar y Descargar Pre-Orden de Casting
                     </button>
                 </div>
@@ -175,3 +175,60 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formPreOrdenCasting");
+    if(!form) return;
+    const btn = document.getElementById("btn-submit-poc");
+    const hasPage2Input = document.getElementById("poc-has-page2");
+    
+    function checkCastingFormValidity() {
+        if(!btn) return;
+        const p1HasRows = document.getElementById("alm-tbody-poc-p1") && document.getElementById("alm-tbody-poc-p1").querySelectorAll("tr").length > 0;
+        let isValid = p1HasRows;
+        
+        // Validate Page 1 required fields
+        const p1Required = document.getElementById("poc-page-1")?.querySelectorAll("[required]");
+        if(p1Required) {
+            for(let i=0; i<p1Required.length; i++) {
+                if(!p1Required[i].value) {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+        
+        // Validate Page 2 if active
+        if(hasPage2Input && hasPage2Input.value === "1") {
+            const p2HasRows = document.getElementById("alm-tbody-poc-p2") && document.getElementById("alm-tbody-poc-p2").querySelectorAll("tr").length > 0;
+            if(!p2HasRows) isValid = false;
+            
+            const p2Required = document.getElementById("poc-page-2")?.querySelectorAll("[required]");
+            if(p2Required && isValid) {
+                for(let i=0; i<p2Required.length; i++) {
+                    if(!p2Required[i].value) {
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (isValid) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
+            btn.style.cursor = "not-allowed";
+        }
+    }
+
+    form.addEventListener("input", checkCastingFormValidity);
+    form.addEventListener("change", checkCastingFormValidity);
+    
+    // Check periodically in case rows are added/removed dynamically
+    setInterval(checkCastingFormValidity, 500);
+});
+</script>
