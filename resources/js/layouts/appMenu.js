@@ -151,10 +151,17 @@ function isPathMatching(currentPath, aHref) {
 
         if (currentPath === linkPath) return true;
 
-        // Sub-rutas derivadas o parametrizadas de Orden de Trabajo (ej: /showWO/5468 -> /manageWO)
-        if ((currentPath.startsWith('/showWO') || currentPath.startsWith('/show_wo_almacen')) && window.routes && window.routes.manageWO) {
-            const managePath = new URL(window.routes.manageWO, window.location.origin).pathname;
-            if (linkPath === managePath) return true;
+        // Sub-rutas derivadas o parametrizadas de Orden de Trabajo (ej: /showWO/5468 -> /master/createWO o /manageWO)
+        if (currentPath.startsWith('/showWO') || currentPath.startsWith('/show_wo_almacen')) {
+            if (window.location.search.includes('from_master=1')) {
+                if (window.routes && window.routes.createMasterWO) {
+                    const masterPath = new URL(window.routes.createMasterWO, window.location.origin).pathname;
+                    if (linkPath === masterPath) return true;
+                }
+            } else if (window.routes && window.routes.manageWO) {
+                const managePath = new URL(window.routes.manageWO, window.location.origin).pathname;
+                if (linkPath === managePath) return true;
+            }
         }
 
         // Sub-rutas de usuarios (ej: /users/1/edit -> /users)

@@ -55,9 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fecha_compra: document.getElementById("mod_fecha_compra"),
             orden_compra: document.getElementById("mod_orden_compra"),
             cliente: document.getElementById("mod_cliente"),
-            proveedor_material: document.getElementById("mod_proveedor_material"),
             material: document.getElementById("mod_material"),
-            semana_entrega_cliente: document.getElementById("mod_semana_entrega_cliente"),
             fecha_entrega_cliente: document.getElementById("mod_fecha_entrega_cliente")
         };
 
@@ -76,6 +74,12 @@ document.addEventListener("DOMContentLoaded", function () {
             "HG - SS10", "HG - SS10CR", "HG - SS20", "HG - 50V", "HG - DUCTIL 654512",
             "SSMF - MINOX", "DAMERON", "DAMERON - SSMF", "1018", "4140",
             "INOX 304", "INOX 316", "INOX 416", "ALUMINIO"
+        ];
+
+        const FOUNDRY_PROVIDERS = [
+            "SS Metal Foundry, S. de R. L. de C. V.",
+            "SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS",
+            "EXTERNO"
         ];
 
         if (!hasChanged && initialValues.class_orders) {
@@ -99,6 +103,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     const currentMat = String(matSelect.value).trim();
                     const initMat = String(initialValues.class_materials[clId] ?? "").trim();
                     if (currentMat !== initMat) {
+                        hasChanged = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!hasChanged && initialValues.class_proveedores) {
+            for (let clId in initialValues.class_proveedores) {
+                const provSelect = document.querySelector(`select[name="class_proveedores[${clId}]"]`);
+                if (provSelect && !provSelect.disabled) {
+                    const currentProv = String(provSelect.value).trim();
+                    const initProv = String(initialValues.class_proveedores[clId] ?? "").trim();
+                    if (currentProv !== initProv) {
                         hasChanged = true;
                         break;
                     }
@@ -217,6 +235,12 @@ document.addEventListener("DOMContentLoaded", function () {
         "INOX 304", "INOX 316", "INOX 416", "ALUMINIO"
     ];
 
+    const FOUNDRY_PROVIDERS = [
+        "SS Metal Foundry, S. de R. L. de C. V.",
+        "SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS",
+        "EXTERNO"
+    ];
+
     if (woSelect && window.workOrdersData) {
         const populateFields = () => {
             const woId = woSelect.value;
@@ -230,19 +254,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 formUpdate.querySelector("#mod_molding").value = wo.moldura?.nombre || "Sin Moldura";
                 formUpdate.querySelector("#mod_fecha_compra").value = wo.fecha_compra || "";
                 document.getElementById("mod_orden_compra").value = wo.orden_compra ?? "";
-                document.getElementById("mod_cliente").value = wo.cliente ?? "";
-                document.getElementById("mod_proveedor_material").value = wo.proveedor_material ?? "";
                 
+                const clienteSelect = document.getElementById("mod_cliente");
+                if (clienteSelect) {
+                    const clientVal = wo.cliente ?? "";
+                    if (clientVal && !Array.from(clienteSelect.options).some(o => o.value === clientVal)) {
+                        const opt = document.createElement("option");
+                        opt.value = clientVal;
+                        opt.textContent = clientVal;
+                        clienteSelect.appendChild(opt);
+                    }
+                    clienteSelect.value = clientVal;
+                }
+
                 const matSelect = document.getElementById("mod_material");
                 if (matSelect) {
                     matSelect.value = wo.material ?? "";
                 }
 
-                const rawSemana = String(wo.semana_entrega_cliente ?? "").replace(/\D/g, "");
-                const semSelect = document.getElementById("mod_semana_entrega_cliente");
-                if (semSelect) {
-                    semSelect.value = rawSemana;
-                }
                 document.getElementById("mod_fecha_entrega_cliente").value = wo.fecha_entrega_cliente ?? "";
 
                 // Guardar estado inicial para detectar cambios
@@ -250,12 +279,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     fecha_compra: wo.fecha_compra ?? "",
                     orden_compra: wo.orden_compra ?? "",
                     cliente: wo.cliente ?? "",
-                    proveedor_material: wo.proveedor_material ?? "",
                     material: wo.material ?? "",
-                    semana_entrega_cliente: semSelect ? semSelect.value : (wo.semana_entrega_cliente ?? ""),
                     fecha_entrega_cliente: wo.fecha_entrega_cliente ?? "",
                     class_orders: {},
-                    class_materials: {}
+                    class_materials: {},
+                    class_proveedores: {}
                 };
 
                 // Llenar tabla de clases
@@ -268,6 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         wo.clases.forEach(cl => {
                             initialValues.class_orders[cl.id] = String(cl.pedido ?? 0);
                             initialValues.class_materials[cl.id] = cl.material ?? "";
+                            initialValues.class_proveedores[cl.id] = cl.proveedor ?? "";
                             
                             let matOptionsHtml = `<option value="" ${!cl.material ? 'selected' : ''}>-- Seleccione Material --</option>`;
                             MATERIAL_OPTIONS.forEach(mat => {
@@ -277,12 +306,25 @@ document.addEventListener("DOMContentLoaded", function () {
                                 matOptionsHtml += `<option value="${cl.material}" selected>${cl.material}</option>`;
                             }
 
+                            let provOptionsHtml = `<option value="" ${(!cl.proveedor || cl.proveedor === '') ? 'selected' : ''}>-- Sin Proveedor / Opcional --</option>`;
+                            FOUNDRY_PROVIDERS.forEach(prov => {
+                                provOptionsHtml += `<option value="${prov}" ${cl.proveedor === prov ? 'selected' : ''}>${prov}</option>`;
+                            });
+                            if (cl.proveedor && !FOUNDRY_PROVIDERS.includes(cl.proveedor)) {
+                                provOptionsHtml += `<option value="${cl.proveedor}" selected>${cl.proveedor}</option>`;
+                            }
+
                             const tr = document.createElement("tr");
                             tr.innerHTML = `
                                 <td><strong class="existing-class-name">${cl.nombre}</strong></td>
                                 <td>
                                     <select name="class_materials[${cl.id}]" class="form-control class-mat-select" style="width: 100%;">
                                         ${matOptionsHtml}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="class_proveedores[${cl.id}]" class="form-control class-prov-select" style="width: 100%;">
+                                        ${provOptionsHtml}
                                     </select>
                                 </td>
                                 <td>
@@ -305,6 +347,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                         if (qtyInput) qtyInput.disabled = true;
                                         const matSelect = tr.querySelector(".class-mat-select");
                                         if (matSelect) matSelect.disabled = true;
+                                        const provSelect = tr.querySelector(".class-prov-select");
+                                        if (provSelect) provSelect.disabled = true;
                                         
                                         // Agregar input hidden para eliminar la clase
                                         const hiddenDelete = document.createElement("input");
@@ -320,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         });
                     } else {
                         container.style.display = "block";
-                        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Aún no se han registrado clases para esta Orden de Trabajo.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Aún no se han registrado clases para esta Orden de Trabajo.</td></tr>`;
                     }
                 }
 
@@ -348,6 +392,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     newMatOptionsHtml += `<option value="${mat}">${mat}</option>`;
                 });
 
+                let newProvOptionsHtml = `<option value="" selected>-- Sin Proveedor / Opcional --</option>`;
+                FOUNDRY_PROVIDERS.forEach(prov => {
+                    newProvOptionsHtml += `<option value="${prov}">${prov}</option>`;
+                });
+
                 let newClassOptionsHtml = `<option value="" disabled selected>Seleccione</option>`;
                 CLASS_OPTIONS.forEach(cls => {
                     newClassOptionsHtml += `<option value="${cls}">${cls}</option>`;
@@ -363,6 +412,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>
                         <select name="new_classes[${newClassCounter}][material]" class="form-control class-mat-select" style="width: 100%;">
                             ${newMatOptionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="new_classes[${newClassCounter}][proveedor]" class="form-control class-prov-select" style="width: 100%;">
+                            ${newProvOptionsHtml}
                         </select>
                     </td>
                     <td>

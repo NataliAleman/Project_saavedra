@@ -66,31 +66,19 @@
             <!-- 5. Cliente -->
             <div class="form-field">
                 <label for="cliente">5. Cliente <span class="text-danger">*</span></label>
-                <input type="text" name="cliente" id="cliente" required placeholder="Ej. Vidriera Guadalajara" value="{{ old('cliente') }}">
-            </div>
-
-            <!-- 6. Proveedor de Material -->
-            <div class="form-field">
-                <label for="proveedor_material">6. Proveedor de Material <span class="text-danger">*</span></label>
-                <input type="text" name="proveedor_material" id="proveedor_material" required placeholder="Ej. Fundidora Azteca" value="{{ old('proveedor_material') }}">
-            </div>
-
-            <!-- 7. No. de Semana -->
-            <div class="form-field">
-                <label for="semana_entrega_cliente">7. No. de Semana <span class="text-danger">*</span></label>
-                <select name="semana_entrega_cliente" id="semana_entrega_cliente" required>
-                    <option value="" disabled selected>Seleccione la semana</option>
-                    @for($i = 1; $i <= 52; $i++)
-                        <option value="{{ $i }}" {{ old('semana_entrega_cliente') == $i ? 'selected' : '' }}>
-                            {{ $i }}
+                <select name="cliente" id="cliente" required>
+                    <option value="" disabled {{ old('cliente') ? '' : 'selected' }}>Seleccione el cliente</option>
+                    @foreach(['SLP', 'FEVISA', 'SAVERGLASS', 'MEXICALI', 'GLASS & GLASS', 'VETRO', 'L. VERACRUZ'] as $clienteOption)
+                        <option value="{{ $clienteOption }}" {{ old('cliente') == $clienteOption ? 'selected' : '' }}>
+                            {{ $clienteOption }}
                         </option>
-                    @endfor
+                    @endforeach
                 </select>
             </div>
 
-            <!-- 8. F. Compromertida con el Cliente -->
+            <!-- 6. F. Comprometida con el Cliente -->
             <div class="form-field">
-                <label for="fecha_entrega_cliente">8. F. Compromertida con el Cliente <span class="text-danger">*</span></label>
+                <label for="fecha_entrega_cliente">6. F. Comprometida con el Cliente <span class="text-danger">*</span></label>
                 <input type="date" name="fecha_entrega_cliente" id="fecha_entrega_cliente" required value="{{ old('fecha_entrega_cliente') }}">
             </div>
 
@@ -135,26 +123,16 @@
 
             <div class="form-field">
                 <label for="mod_cliente">Cliente <span class="text-danger">*</span></label>
-                <input type="text" name="cliente" id="mod_cliente" required>
-            </div>
-
-            <div class="form-field">
-                <label for="mod_proveedor_material">Proveedor de Material <span class="text-danger">*</span></label>
-                <input type="text" name="proveedor_material" id="mod_proveedor_material" required>
-            </div>
-
-            <div class="form-field">
-                <label for="mod_semana_entrega_cliente">No. de Semana <span class="text-danger">*</span></label>
-                <select name="semana_entrega_cliente" id="mod_semana_entrega_cliente" required>
-                    <option value="" disabled selected>Seleccione la semana</option>
-                    @for($i = 1; $i <= 52; $i++)
-                        <option value="{{ $i }}">{{ $i }}</option>
-                    @endfor
+                <select name="cliente" id="mod_cliente" required>
+                    <option value="" disabled selected>Seleccione el cliente</option>
+                    @foreach(['SLP', 'FEVISA', 'SAVERGLASS', 'MEXICALI', 'GLASS & GLASS', 'VETRO', 'L. VERACRUZ'] as $clienteOption)
+                        <option value="{{ $clienteOption }}">{{ $clienteOption }}</option>
+                    @endforeach
                 </select>
             </div>
 
             <div class="form-field">
-                <label for="mod_fecha_entrega_cliente">F. Compromertida con el Cliente <span class="text-danger">*</span></label>
+                <label for="mod_fecha_entrega_cliente">F. Comprometida con el Cliente <span class="text-danger">*</span></label>
                 <input type="date" name="fecha_entrega_cliente" id="mod_fecha_entrega_cliente" required>
             </div>
 
@@ -166,6 +144,7 @@
                         <tr>
                             <th>Clase</th>
                             <th>Material</th>
+                            <th>Proveedor Fundición</th>
                             <th>Cantidad / Pedido (Piezas)</th>
                             <th>Acciones</th>
                         </tr>

@@ -82,41 +82,67 @@ const CLASS_OPTIONS = [
     "121 - ROLL PIN OBTURADOR"
 ];
 
-//Ejecución de la función para la creación del formulario de la clase
-createForm(); //Creación del formulario de la clase
+const MATERIAL_OPTIONS = [
+    "HG - SS10",
+    "HG - SS10CR",
+    "HG - SS20",
+    "HG - 50V",
+    "HG - DUCTIL 654512",
+    "SSMF - MINOX",
+    "DAMERON",
+    "DAMERON - SSMF",
+    "1018",
+    "4140",
+    "INOX 304",
+    "INOX 316",
+    "INOX 416",
+    "ALUMINIO"
+];
 
-// Validación al enviar el formulario (Composición Química es obligatoria)
-document.getElementById("form").addEventListener("submit", function (event) {
-    let checkboxAddClass = document.querySelector(".checkbox-add-class");
-    let isAdding = checkboxAddClass && checkboxAddClass.checked;
-    let isEditing = document.getElementById("btn-saveClass") !== null;
+const FOUNDRY_PROVIDERS = [
+    "SS Metal Foundry, S. de R. L. de C. V.",
+    "SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS",
+    "EXTERNO"
+];
 
-    if (isAdding || isEditing) {
-        let checkedChips = document.querySelectorAll(".chemical-composition-input:checked");
-        let otroInput = document.querySelector('input[name="composicion_quimica_otro"]');
-        let hasOtro = otroInput && otroInput.value.trim() !== "";
-        let hasChemInput = (document.querySelectorAll(".chemical-composition-input").length > 0 || otroInput);
-
-        // Normalizar el campo "otro" al enviar (solo admin=1 y master=3)
-        if (otroInput && (window.profile == 1 || window.profile == 3)) {
-            otroInput.value = normalizeChemicalInput(otroInput.value);
-        }
-
-        if (hasChemInput && checkedChips.length === 0 && !hasOtro) {
-            event.preventDefault();
-            alert("Por favor, seleccione al menos una Composición Química o especifique otra.");
-            return false;
-        }
-    }
-});
+const TIPOS_SOLDADURA_OPTIONS = [
+    { value: "", label: "-- Sin Soldadura / Opcional --" },
+    { value: "1", label: "P1 - 3" },
+    { value: "2", label: "P2 - 2.5" },
+    { value: "3", label: "P3 - 2" },
+    { value: "4", label: "P4 - 1.5" },
+];
 
 function createForm() {
     let div_rows = document.querySelector(".div-rows"); //Obtención del div en donde se insertará el formulario
+    if (!div_rows) return;
     div_rows.appendChild(createRowsForm(get_inputAttributes(window.workOrder.id, window.molding.nombre)[0])); //Creación del formulario de la clase
     let div_rowsHidden = document.createElement("div");
     div_rowsHidden.className = "div-rows-hidden hidden";
     div_rows.appendChild(div_rowsHidden);
+
+    const isMaster = (window.profile == 3 || window.location.search.includes('from_master=1'));
+    const isAdmin = (window.profile == 1 || (!isMaster && window.profile != 5));
+
+    // Si no hay clases registradas aún, activar directamente el modo para agregar la primera clase (perfil Master)
+    if (!window.classes || window.classes.length === 0) {
+        let checkbox = document.querySelector(".checkbox-add-class");
+        if (checkbox) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event("change"));
+        } else {
+            setOrDelete_ClassButtons(null, true);
+            div_rowsHidden.innerHTML = "";
+            div_rowsHidden.appendChild(
+                createRowsForm(get_inputAttributes(window.workOrder.id, window.molding.nombre)[1])
+            );
+            showformHidden(true);
+        }
+    }
 }
+
+// Ejecutar la creación del formulario
+createForm();
 
 // Funcion para obtener los atributos que se deben de implementar en los inputs del formulario
 function get_inputAttributes(workOrder, molding, value = null) {
@@ -142,9 +168,8 @@ function get_inputAttributes(workOrder, molding, value = null) {
         table: {},
     };
 
-    //Insertar los demas tamanios al arreglo
     let tamanios = [];
-    if (value != null) {
+    if (value != null && value.tamanio) {
         tamanios.push(value.tamanio);
         ["Chico", "Mediano", "Grande"].forEach((size) => {
             if (!tamanios.includes(size)) {
@@ -155,47 +180,181 @@ function get_inputAttributes(workOrder, molding, value = null) {
         tamanios = ["Chico", "Mediano", "Grande"];
     }
 
-    formInputsHidden = {
-        classType: {
-            label: "Seleccione el tipo ",
-            select: {
-                name: "class",
-                class: "classes",
+    if (value == null) {
+        // Modo agregar clase nueva
+        formInputsHidden = {
+            classType: {
+                label: "1. Tipo de Clase",
+                required: true,
+                select: {
+                    name: "class",
+                    class: "classes",
+                    required: true,
+                },
+                options: CLASS_OPTIONS,
             },
-            options: CLASS_OPTIONS,
-        },
             size: {
-                label: "Seleccione el tamaño",
+                label: "2. Tamaño",
                 select: {
                     name: "size",
                     class: "selects",
                 },
                 options: tamanios,
-                currentValue: value == null ? null : value.tamanio,
+                currentValue: null,
             },
-            tipoSoldadura: {
+            tipo_soldadura: {
+                label: "3. Tipo de Soldadura",
+                select: {
+                    name: "tipo_soldadura",
+                    class: "selects",
+                },
+                optionsMap: TIPOS_SOLDADURA_OPTIONS,
+                currentValue: "",
+            },
+            order: {
+                label: "4. Cantidad / Pedido",
+                required: true,
+                input: {
+                    type: "number",
+                    name: "order",
+                    required: true,
+                    min: 1,
+                    placeholder: "Ingrese su cantidad",
+                    value: "",
+                },
+            },
+            pieces: {
+                label: "5. Piezas con consignación",
+                input: {
+                    type: "number",
+                    name: "pieces",
+                    value: 0,
+                },
+            },
+            startDate: {
+                label: "6. Fecha de inicio",
+                input: {
+                    type: "date",
+                    name: "start_date",
+                    value: new Date().toISOString().split('T')[0],
+                },
+            },
+            startTime: {
+                label: "7. Hora de inicio",
+                input: {
+                    type: "time",
+                    name: "start_time",
+                    value: new Date().toTimeString().slice(0, 5),
+                },
+            },
+            finishDate: {
+                label: "8. Fecha de termino",
+                input: {
+                    type: "text",
+                    name: "finish_date",
+                    disabled: true,
+                    value: "-",
+                },
+            },
+            finishTime: {
+                label: "9. Hora de termino",
+                input: {
+                    type: "text",
+                    name: "finish_time",
+                    disabled: true,
+                    value: "-",
+                },
+            },
+            material: {
+                label: "10. Material",
+                select: {
+                    name: "material",
+                    class: "selects",
+                },
+                options: MATERIAL_OPTIONS,
+                currentValue: "HG - SS10",
+            },
+            proveedor_fundicion: {
+                label: "11. Proveedor de Fundición",
+                select: {
+                    name: "proveedor_fundicion",
+                    class: "selects",
+                },
+                optionsMap: [
+                    { value: "", label: "-- Sin proveedor / Opcional --" },
+                    ...FOUNDRY_PROVIDERS.map((p) => ({ value: p, label: p }))
+                ],
+                currentValue: "",
+            },
+        };
+    } else {
+        // Modo editar clase: SOLO editables Tamaño, Tipo de Soldadura, Fecha de inicio, Hora de inicio
+        let formatDisplayDate = (d) => {
+            if (!d || d === "null" || d === "-") return "-";
+            let parts = d.split("-");
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return d;
+        };
+
+        let formatDisplayTime = (t) => {
+            if (!t || t === "null" || t === "-") return "-";
+            try {
+                let parts = t.split(":");
+                if (parts.length >= 2) {
+                    let h = parseInt(parts[0]);
+                    let m = parts[1];
+                    let ampm = h >= 12 ? "p. m." : "a. m.";
+                    let h12 = h % 12 || 12;
+                    return `${h12 < 10 ? '0' + h12 : h12}:${m} ${ampm}`;
+                }
+            } catch (e) {}
+            return t;
+        };
+
+        formInputsHidden = {
+            classType: {
+                label: "Clase",
+                input: {
+                    type: "text",
+                    name: "class",
+                    value: value.nombre,
+                    disabled: true,
+                },
+            },
+            size: {
+                label: "Tamaño",
+                select: {
+                    name: "size",
+                    class: "selects",
+                },
+                options: tamanios,
+                currentValue: value.tamanio ?? "Chico",
+            },
+            tipo_soldadura: {
                 label: "Tipo de Soldadura",
                 select: {
                     name: "tipo_soldadura",
                     class: "selects",
                 },
-                optionsMap: [
-                    { value: "", label: "-- Seleccionar --" },
-                    { value: "1", label: "P1 - 3" },
-                    { value: "2", label: "P2 - 2.5" },
-                    { value: "3", label: "P3 - 2" },
-                    { value: "4", label: "P4 - 1.5" },
-                ],
-                currentValue: value == null ? null : (value.tipo_soldadura ? String(value.tipo_soldadura) : ""),
+                optionsMap: TIPOS_SOLDADURA_OPTIONS,
+                currentValue: value.tipo_soldadura ? String(value.tipo_soldadura) : "",
             },
             order: {
-                label: "Pedido Total",
+                label: "Cantidad / Pedido",
                 input: {
                     type: "number",
                     name: "order",
-                    required: true,
+                    value: value.pedido,
                     disabled: true,
-                    value: value == null ? (window.workOrder && window.workOrder.cantidad ? window.workOrder.cantidad : "") : value.pedido,
+                },
+            },
+            pieces: {
+                label: "Piezas con consignación",
+                input: {
+                    type: "number",
+                    name: "pieces",
+                    value: value.piezas ?? 0,
+                    disabled: true,
                 },
             },
             startDate: {
@@ -203,8 +362,7 @@ function get_inputAttributes(workOrder, molding, value = null) {
                 input: {
                     type: "date",
                     name: "start_date",
-                    required: true,
-                    value: value == null ? null : value.fecha_inicio,
+                    value: value.fecha_inicio ?? new Date().toISOString().split('T')[0],
                 },
             },
             startTime: {
@@ -212,69 +370,60 @@ function get_inputAttributes(workOrder, molding, value = null) {
                 input: {
                     type: "time",
                     name: "start_time",
-                    required: true,
-                    value: value == null ? null : value.hora_inicio,
+                    value: value.hora_inicio ? value.hora_inicio.slice(0, 5) : new Date().toTimeString().slice(0, 5),
                 },
             },
             finishDate: {
                 label: "Fecha de termino",
                 input: {
-                    type: "date",
+                    type: "text",
                     name: "finish_date",
                     disabled: true,
-                    value: value == null ? null : value.fecha_termino,
+                    value: formatDisplayDate(value.fecha_termino),
                 },
             },
-                finishTime: {
-                    label: "Hora de termino",
-                    input: {
-                        type: "time",
-                        name: "finish_time",
-                        disabled: true,
-                        value: value == null ? null : value.hora_termino,
-                    },
+            finishTime: {
+                label: "Hora de termino",
+                input: {
+                    type: "text",
+                    name: "finish_time",
+                    disabled: true,
+                    value: formatDisplayTime(value.hora_termino),
                 },
-            };
-    //Eliminacion de valor del id de la clase en el input de tipo hidden
-    let inputClassId = document.getElementById("idClass");
-    if (inputClassId) {
-        inputClassId.value = "";
-        inputClassId.removeAttribute("value");
-    }
-    if (value != null) {
-        //Modificacion de valor del id de la clase en el input de tipo hidden
-        if (inputClassId) {
-            inputClassId.setAttribute("value", value.id);
-            inputClassId.value = value.id;
-        }
-
-        // //Modificación de las opciones del select de tamaño si la clase es obturador
-        // if (value.nombre == "Obturador") {
-        //     let sectionOptions = [1, 2];
-        //     sectionOptions.splice(sectionOptions.indexOf(value.seccion), 1);
-        //     sectionOptions.unshift(value.seccion);
-
-        //     formInputsHidden.size = {
-        //         label: "Selecciona la sección",
-        //         select: {
-        //             name: "section",
-        //             class: "selects",
-        //         },
-        //         options: sectionOptions,
-        //     };
-        // }
-
-        formInputsHidden.classType = {
-            label: "Clase",
-            input: {
-                type: "text",
-                value: value.nombre,
-                name: "class",
-                class: "classes",
-                disabled: true,
+            },
+            material: {
+                label: "Material",
+                input: {
+                    type: "text",
+                    name: "material",
+                    value: value.material ?? "-",
+                    disabled: true,
+                },
+            },
+            proveedor_fundicion: {
+                label: "Proveedor de Fundición",
+                input: {
+                    type: "text",
+                    name: "proveedor_fundicion",
+                    value: (value.proveedor && String(value.proveedor).trim() !== "") ? value.proveedor : "-",
+                    disabled: true,
+                },
             },
         };
     }
+
+    //Eliminacion de valor del id de la clase en el input de tipo hidden
+    let inputClassId = document.getElementById("idClass");
+    if (inputClassId) {
+        if (value != null) {
+            inputClassId.setAttribute("value", value.id);
+            inputClassId.value = value.id;
+        } else {
+            inputClassId.value = "";
+            inputClassId.removeAttribute("value");
+        }
+    }
+
     return [formInputs, formInputsHidden];
 }
 
@@ -291,6 +440,7 @@ function createRowsForm(formInputs) {
             fragment.appendChild(createScrollableTable(window.classes));
             //Inserción de los elementos correspondientes al checkbox de agregar más clases
             insertWOButtons(fragment);
+            fragment.appendChild(createCheckboxAddClass());
             inputsCounter++;
             continue;
         }
@@ -453,8 +603,15 @@ function createSelectOrInput(element, attributesArray, nameInput) {
                 htmlTag.add(option);
             });
         } else {
-            let options = attributesArray["options"];
+            let options = attributesArray["options"] || [];
             let currentValue = attributesArray["currentValue"] ?? null;
+            if (currentValue && !options.includes(currentValue)) {
+                let customOpt = document.createElement("option");
+                customOpt.value = currentValue;
+                customOpt.text = currentValue;
+                customOpt.selected = true;
+                htmlTag.add(customOpt);
+            }
             for (let i = 0; i < options.length; i++) {
                 let option = document.createElement("option");
                 option.value = options[i];
@@ -466,12 +623,8 @@ function createSelectOrInput(element, attributesArray, nameInput) {
             }
         }
         if (nameInput == "classType") {
-            //Si el select es el de tipo de clase, se añade un evento para modificar el select
             htmlTag.addEventListener("change", () => {
-                modifySelect(htmlTag.value);
-                createOperationsCheckBox(htmlTag.value, null, true);
-                toggleWeldingTypeVisibility(htmlTag.value);
-                showformHidden(true, htmlTag.value);
+                showformHidden(true);
             });
         }
         if (attributesArray.select && attributesArray.select.disabled && attributesArray.select.name) {
@@ -552,12 +705,17 @@ function createTableClasses(classes) {
     table.className = "table"; //Clase de la tabla
 
     //Creación de la fila de títulos
-    let titles = ["Clase", "Pedido Total", "Material"];
+    let headerConfig = [
+        { label: "Clase", key: "nombre" },
+        { label: "Pedido Total", key: "pedido" },
+        { label: "Material", key: "material" },
+        { label: "Proveedor Fundición", key: "proveedor" }
+    ];
     let tr = document.createElement("tr");
-    titles.forEach((title) => {
+    headerConfig.forEach((item) => {
         let th = document.createElement("th");
-        th.textContent = title;
-        th.className = "t-title";
+        th.textContent = item.label;
+        th.className = "t-title th-" + item.key;
         tr.appendChild(th);
     });
     table.appendChild(tr);
@@ -570,21 +728,23 @@ function createTableClasses(classes) {
         button.value = classArray["id"];
         button.className = "btnClass";
 
-        let fields = ["nombre", "pedido", "material"];
+        let fields = [
+            { key: "nombre", val: classArray["nombre"] ?? "-" },
+            { key: "pedido", val: classArray["pedido"] ?? "-" },
+            { key: "material", val: classArray["material"] ?? "-" },
+            { key: "proveedor", val: (classArray["proveedor"] && String(classArray["proveedor"]).trim() !== "") ? classArray["proveedor"] : "-" }
+        ];
+
         fields.forEach((field) => {
             let div_td = document.createElement("div");
-            div_td.className = "div-td td-" + field;
-            let val = classArray[field];
-            div_td.textContent = val ?? "-";
+            div_td.className = "div-td td-" + field.key;
+            div_td.textContent = field.val;
             button.appendChild(div_td);
         });
 
         //Agregar evento al boton
-        button.addEventListener("click", function () {
+        button.addEventListener("click", function (event) {
             event.preventDefault();
-
-            //Estilos de los botones de accion de la clase
-            setOrDelete_ClassButtons(button.value, false);
 
             //Estilos de los botones de la tabla
             let buttons = document.querySelectorAll(".btnClass");
@@ -595,16 +755,27 @@ function createTableClasses(classes) {
 
             //Obtener el valor del boton y mostrar la información de la clase seleccionada
             setClassInfo(classes, button.value);
-            let checkbox = document.querySelector(".checkbox-add-class");
-            if (checkbox) {
-                if (checkbox.checked == true) {
-                    checkbox.checked = false;
-                }
+
+            // Asignar el ID de la clase seleccionada al input hidden
+            let inputClassId = document.getElementById("idClass");
+            if (inputClassId) {
+                inputClassId.value = button.value;
+                inputClassId.setAttribute("value", button.value);
             }
 
-            createOperationsCheckBox(classArray["nombre"], window.processes[button.value], false); //Crear las casillas de los procesos
-            //Mostrar el formulario de la clase junto con sus procesos
-            showformHidden(true, classArray["nombre"]);
+            let checkbox = document.querySelector(".checkbox-add-class");
+            if (checkbox && checkbox.checked) {
+                checkbox.checked = false;
+            }
+            showformHidden(true);
+
+            // Buscar la clase seleccionada
+            let selectedClass = classes.find((c) => String(c.id) === String(button.value));
+            let selectedClassName = selectedClass ? selectedClass.nombre : "";
+
+            // Para Programación de OT (Admin y Master): mostrar casillas de procesos en modo solo lectura (edit = false)
+            createOperationsCheckBox(selectedClassName, window.processes ? window.processes[button.value] : null, false);
+            setOrDelete_ClassButtons(button.value, false);
         });
 
         fragment.appendChild(button);
@@ -617,66 +788,44 @@ function setOrDelete_ClassButtons(idClass, action) {
     let containerCheckbox = document.querySelector(".container-checkbox");
 
     //Eliminar botones de acción anteriores si ya existen
-    document.querySelectorAll(".btn-deleteClass, .btn-editClass, #btn-saveClass").forEach((btn) => btn.remove());
+    document.querySelectorAll(".btn-deleteClass, .btn-editClass, #btn-saveClass, #btn-saveProcess").forEach((btn) => btn.remove());
 
-    //Crear el boton de eliminar clase dirigiendolo a la ruta correspondiente con el id de la clase que se desea eliminar
-    if (!action) {
-        if (containerCheckbox) {
-            containerCheckbox.hidden = false;
-            containerCheckbox.classList.remove("hidden");
-        }
-        if (idClass !== null) {
-            let div_btns = document.querySelector(".div-btns"); //Obtener el div en donde se insertaran los botones de accion de la clase
-            //Ocultar el boton de agregar clase
-            let btn_addClass = document.querySelector(".btn-addClass");
-            if (btn_addClass) {
-                btn_addClass.hidden = true;
-                btn_addClass.classList.add("hidden");
-            }
+    let div_btns = document.querySelector(".div-btns");
 
-            //Creacion del boton de editar clase
-            createButtons(idClass).forEach((button) => {
-                div_btns.appendChild(button);
-            });
-        } else {
-            //Ocultar el boton de agregar clase
-            let btn_addClass = document.querySelector(".btn-addClass");
-            if (btn_addClass) {
-                btn_addClass.hidden = true;
-                btn_addClass.classList.add("hidden");
-            }
-        }
-    } else if (action == "edit") {
-        if (containerCheckbox) {
-            containerCheckbox.hidden = true;
-            containerCheckbox.classList.add("hidden");
-        }
-        //Ocultar el boton de agregar clase
-        let btn_addClass = document.querySelector(".btn-addClass");
+    // En Programación de OT (showWO) no se permite agregar clases
+    if (containerCheckbox) {
+        containerCheckbox.hidden = true;
+        containerCheckbox.classList.add("hidden");
+        containerCheckbox.style.display = "none";
+    }
+
+    if (action === "edit") {
         if (btn_addClass) {
             btn_addClass.hidden = true;
             btn_addClass.classList.add("hidden");
         }
 
-        //Creacion del boton de editar clase
-        let btn_saveClassEdition = document.createElement("button");
-        btn_saveClassEdition.className = "btn-editClass action-btns";
-        btn_saveClassEdition.id = "btn-saveClass";
-        btn_saveClassEdition.innerHTML = "Guardar";
-        btn_saveClassEdition.setAttribute("form", "form");
-        let div_btns = document.querySelector(".div-btns"); //Obtener el div en donde se insertaran los botones de accion de la clase
-        div_btns.appendChild(btn_saveClassEdition);
-    } else {
-        if (containerCheckbox) {
-            containerCheckbox.hidden = false;
-            containerCheckbox.classList.remove("hidden");
-        }
-        //Mostrar el boton de agregar clase
-        let btn_addClass = document.querySelector(".btn-addClass");
-        if (btn_addClass) {
-            btn_addClass.hidden = false;
-            btn_addClass.classList.remove("hidden");
-        }
+        let btn_saveProcess = document.createElement("button");
+        btn_saveProcess.type = "submit";
+        btn_saveProcess.className = "btn-addClass btn";
+        btn_saveProcess.id = "btn-saveProcess";
+        btn_saveProcess.innerHTML = "Guardar Procesos";
+        btn_saveProcess.setAttribute("form", "form");
+        btn_saveProcess.disabled = false;
+        div_btns.appendChild(btn_saveProcess);
+        return;
+    }
+
+    if (btn_addClass) {
+        btn_addClass.hidden = true;
+        btn_addClass.classList.add("hidden");
+    }
+
+    if (idClass !== null) {
+        // 1. Botón Editar Clase y 2. Botón Eliminar Clase
+        createButtons(idClass).forEach((button) => {
+            div_btns.appendChild(button);
+        });
     }
 }
 
@@ -685,7 +834,7 @@ function createButtons(idClass) {
     let btn_editClass = document.createElement("button");
     btn_editClass.className = "btn-editClass action-btns";
     btn_editClass.innerHTML = "Editar Clase";
-    btn_editClass.addEventListener("click", function () {
+    btn_editClass.addEventListener("click", function (event) {
         event.preventDefault();
         enableEditClass(idClass);
     });
@@ -709,24 +858,32 @@ function enableEditClass(idClass) {
 
     let div_rowsHidden = document.querySelector(".div-rows-hidden");
     div_rowsHidden.innerHTML = "";
+    let selectedClass = null;
     for (let classObject in window.classes) {
         if (window.classes[classObject].id == idClass) {
+            selectedClass = window.classes[classObject];
             div_rowsHidden.appendChild(
                 createRowsForm(
-                    get_inputAttributes(window.workOrder.id, window.molding.nombre, window.classes[classObject])[1]
+                    get_inputAttributes(window.workOrder.id, window.molding.nombre, selectedClass)[1]
                 )
             );
             break;
         }
     }
 
-    let classElem = document.querySelector(".classes");
-    if (classElem) {
-        let className = classElem.value;
-        createOperationsCheckBox(className, window.processes[idClass], true); //Creación de las casillas de los procesos
-        toggleWeldingTypeVisibility(className);
-        showformHidden(true, className);
+    if (selectedClass && window.profile != 5) {
+        // Habilitar casillas de procesos y máquinas para edición (tanto Admin como Master en Programación de OT)
+        createOperationsCheckBox(selectedClass.nombre, window.processes ? window.processes[idClass] : null, true);
     }
+
+    // Asignar el ID de la clase para el envío del formulario
+    let inputClassId = document.getElementById("idClass");
+    if (inputClassId) {
+        inputClassId.value = idClass;
+        inputClassId.setAttribute("value", idClass);
+    }
+
+    showformHidden(true);
 }
 
 function setClassInfo(classesObject = null, classSelected) {
@@ -743,12 +900,36 @@ function setClassInfo(classesObject = null, classSelected) {
 
     for (let classObject in classesObject) {
         if (classesObject[classObject].id == classSelected) {
+            let cls = classesObject[classObject];
+
+            let formatDisplayDate = (d) => {
+                if (!d || d === "null" || d === "-") return "-";
+                let parts = d.split("-");
+                if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                return d;
+            };
+
+            let formatDisplayTime = (t) => {
+                if (!t || t === "null" || t === "-") return "-";
+                try {
+                    let parts = t.split(":");
+                    if (parts.length >= 2) {
+                        let h = parseInt(parts[0]);
+                        let m = parts[1];
+                        let ampm = h >= 12 ? "p. m." : "a. m.";
+                        let h12 = h % 12 || 12;
+                        return `${h12 < 10 ? '0' + h12 : h12}:${m} ${ampm}`;
+                    }
+                } catch (e) {}
+                return t;
+            };
+
             let formInputs = {
                 classType: {
                     label: "Clase",
                     input: {
                         type: "text",
-                        value: classesObject[classObject].nombre,
+                        value: cls.nombre,
                         disabled: true,
                     },
                 },
@@ -756,15 +937,15 @@ function setClassInfo(classesObject = null, classSelected) {
                     label: "Tamaño",
                     input: {
                         type: "text",
-                        value: getSizeLabel(classesObject[classObject].tamanio),
+                        value: cls.tamanio ?? "-",
                         disabled: true,
                     },
                 },
-                tipoSoldadura: {
+                tipo_soldadura: {
                     label: "Tipo de Soldadura",
                     input: {
                         type: "text",
-                        value: getTipoSoldaduraLabel(classesObject[classObject].tipo_soldadura),
+                        value: getTipoSoldaduraLabel(cls.tipo_soldadura),
                         disabled: true,
                     },
                 },
@@ -772,45 +953,63 @@ function setClassInfo(classesObject = null, classSelected) {
                     label: "Pedido Total",
                     input: {
                         type: "number",
-                        value: classesObject[classObject].pedido,
+                        value: cls.pedido,
+                        disabled: true,
+                    },
+                },
+                pieces: {
+                    label: "Piezas con consignación",
+                    input: {
+                        type: "number",
+                        value: cls.piezas ?? 0,
                         disabled: true,
                     },
                 },
                 startDate: {
                     label: "Fecha de inicio",
                     input: {
-                        type: "date",
-                        value: classesObject[classObject].fecha_inicio,
+                        type: "text",
+                        value: formatDisplayDate(cls.fecha_inicio),
                         disabled: true,
                     },
                 },
                 startTime: {
                     label: "Hora de inicio",
                     input: {
-                        type: "time",
-                        value: classesObject[classObject].hora_inicio,
+                        type: "text",
+                        value: formatDisplayTime(cls.hora_inicio),
                         disabled: true,
                     },
                 },
                 finishDate: {
                     label: "Fecha de termino",
                     input: {
-                        type: "date",
-                        value:
-                            classesObject[classObject].fecha_termino == null
-                                ? ""
-                                : classesObject[classObject].fecha_termino,
+                        type: "text",
+                        value: formatDisplayDate(cls.fecha_termino),
                         disabled: true,
                     },
                 },
                 finishTime: {
                     label: "Hora de termino",
                     input: {
-                        type: "time",
-                        value:
-                            classesObject[classObject].hora_termino == null
-                                ? ""
-                                : classesObject[classObject].hora_termino,
+                        type: "text",
+                        value: formatDisplayTime(cls.hora_termino),
+                        disabled: true,
+                    },
+                },
+                material: {
+                    label: "Material",
+                    input: {
+                        type: "text",
+                        value: cls.material ?? "-",
+                        disabled: true,
+                    },
+                },
+                proveedor_fundicion: {
+                    label: "Proveedor de Fundición",
+                    input: {
+                        type: "text",
+                        value: (cls.proveedor && String(cls.proveedor).trim() !== "") ? cls.proveedor : "-",
                         disabled: true,
                     },
                 },
@@ -824,126 +1023,37 @@ function setClassInfo(classesObject = null, classSelected) {
 function createCheckboxAddClass() {
     let div = document.createElement("div");
     div.className = "container-checkbox";
-
-    let label = document.createElement("label");
-    label.textContent = "¿Deseas agregar una clase?";
-    label.id = "label-add-class";
-    label.className = "label-add-class";
-
-    let checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "checkbox-add-class";
-
-    const triggerAddClass = function () {
-        if (checkbox.checked) {
-            // Guardar la clase que se estaba visualizando para restaurarla si se desmarca el checkbox
-            let activeBtn = null;
-            let buttons = document.querySelectorAll(".btnClass");
-            buttons.forEach((btn) => {
-                if (btn.classList.contains("swo-btn-selected") || btn.style.backgroundColor === "rgb(3, 57, 102)" || btn.style.backgroundColor === "#033966") {
-                    activeBtn = btn;
-                }
-            });
-            if (activeBtn) {
-                window.selectedClassId = activeBtn.value;
-            } else {
-                window.selectedClassId = null;
-            }
-
-            //Estilos de los botones de la tabla
-            buttons.forEach((button) => {
-                button.classList.remove("swo-btn-selected"); button.classList.add("swo-btn-unselected");
-            });
-
-            setOrDelete_ClassButtons(null, true);
-
-            let div_rowsHidden = document.querySelector(".div-rows-hidden");
-            if (div_rowsHidden) {
-                div_rowsHidden.innerHTML = "";
-                div_rowsHidden.appendChild(
-                    createRowsForm(get_inputAttributes(window.workOrder.id, window.molding.nombre)[1])
-                );
-            }
-
-            let className = document.querySelector(".classes").value;
-            createOperationsCheckBox(className, null, true); //Creación de las casillas de los procesos
-            toggleWeldingTypeVisibility(className);
-            showformHidden(true, className);
-        } else {
-            // Si desmarca, restaurar la clase seleccionada si existía
-            if (window.selectedClassId) {
-                let targetButton = document.querySelector(`.btnClass[value="${window.selectedClassId}"]`);
-                if (targetButton) {
-                    targetButton.click(); // Vuelve a cargar y mostrar la clase seleccionada
-                    return;
-                }
-            }
-            setOrDelete_ClassButtons(null, false);
-            showformHidden(false);
-        }
-    };
-
-    //Añadir evento al checkbox
-    checkbox.addEventListener("change", triggerAddClass);
-
-    div.appendChild(label);
-    div.appendChild(checkbox);
-
+    // En Programación de OT (showWO) no se permite agregar clases
+    div.hidden = true;
+    div.classList.add("hidden");
+    div.style.display = "none";
     return div;
 }
 
-function isClassWithProcesses(className) {
-    if (!className) return false;
-    let clLower = className.toLowerCase().trim();
-
-    // Exclusiones: bases, accesorios, tips, pernos, etc.
-    if (
-        clLower.includes("base") ||
-        clLower.includes("tip") ||
-        clLower.includes("roll pin") ||
-        clLower.includes("porta") ||
-        clLower.includes("pastilla") ||
-        clLower.includes("canastilla")
-    ) {
-        return false;
-    }
-
-    const allowed = [
-        "molde",
-        "fondo",
-        "bombillo",
-        "obturador",
-        "cabeza de soplo",
-        "plato",
-        "candado",
-        "embudo",
-        "corona"
-    ];
-
-    return allowed.some(item => clLower.includes(item));
-}
-
-function showformHidden(value, currentClassName = null) {
+function showformHidden(value) {
     let div_rowsHidden = document.querySelector(".div-rows-hidden");
-    let div_boxes = document.querySelector(".div-boxes");
-
-    if (!currentClassName) {
-        let classInput = document.querySelector(".classes");
-        if (classInput) currentClassName = classInput.value;
-    }
-
-    let hasProcesses = isClassWithProcesses(currentClassName);
-
-    if (div_boxes) {
-        let shouldShowBoxes = value && hasProcesses;
-        div_boxes.hidden = !shouldShowBoxes;
-        div_boxes.classList.toggle("hidden", !shouldShowBoxes);
-        div_boxes.style.display = shouldShowBoxes ? "" : "none";
-    }
     if (div_rowsHidden) {
         div_rowsHidden.hidden = !value;
         div_rowsHidden.classList.toggle("hidden", !value);
     }
+}
+
+function isClassWithProcesses(className) {
+    if (!className) return false;
+    let clLower = className.toLowerCase();
+    let isExcluded = clLower.includes('base') || clLower.includes('tip') || clLower.includes('roll pin') || clLower.includes('porta') || clLower.includes('pastilla') || clLower.includes('canastilla');
+    if (isExcluded) return false;
+    return (
+        clLower.includes('bombillo') ||
+        clLower.includes('molde') ||
+        clLower.includes('fondo') ||
+        clLower.includes('obturador') ||
+        clLower.includes('corona') ||
+        clLower.includes('plato') ||
+        clLower.includes('embudo') ||
+        clLower.includes('cabeza de soplo') ||
+        clLower.includes('candado')
+    );
 }
 
 function createOperationsCheckBox(className, markedProcesses, edit) {
@@ -1125,57 +1235,65 @@ function createProcessBox(operation, processIndex, operationName, markedProcesse
     return div;
 }
 
-function createCheckboxAll(value) {
+function createCheckboxAll(edit) {
     //Eliminar el checkbox de seleccionar todo si ya existe uno
-    let div = document.querySelector(".div-checkboxAll");
-    if (div != null) {
-        div.remove();
+    let existingDiv = document.querySelector(".div-checkboxAll");
+    if (existingDiv != null) {
+        existingDiv.remove();
     }
 
-    //Crear el checkbox de seleccionar todo
-    if (value) {
-        let div_boxes = document.querySelector(".div-boxes");
+    if (window.profile == 5) return;
 
-        let div = document.createElement("div");
-        div.className = "div-checkboxAll";
+    let div_boxes = document.querySelector(".div-boxes");
+    if (!div_boxes) return;
 
-        let label = document.createElement("label");
-        label.className = "checkbox-label";
-        label.id = "all-label";
-        label.innerHTML = "Seleccionar todo";
+    let div = document.createElement("div");
+    div.className = "div-checkboxAll";
 
-        let checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "checkboxAll";
-        if (document.getElementById("btn-saveClass") == null) {
-            checkbox.checked = true;
-        }
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "checkboxAll";
 
+    let label = document.createElement("label");
+    label.className = "checkbox-label";
+    label.id = "all-label";
+    label.innerHTML = "Seleccionar todo";
+
+    let checkboxes = document.querySelectorAll(".checkbox");
+    let allChecked = checkboxes.length > 0 && Array.from(checkboxes).every((cb) => cb.checked);
+    checkbox.checked = allChecked;
+
+    if (!edit) {
+        checkbox.disabled = true;
+    } else {
+        checkbox.disabled = false;
         checkbox.addEventListener("change", function () {
-            let checkboxes = document.querySelectorAll(".checkbox");
+            let allCheckboxes = document.querySelectorAll(".checkbox");
             let machineInputs = document.querySelectorAll(".input-machine");
             if (this.checked) {
                 machineInputs.forEach((input) => {
                     input.disabled = false;
-                    input.classList.remove("swo-input-disabled"); input.classList.add("swo-input-enabled");
+                    input.classList.remove("swo-input-disabled");
+                    input.classList.add("swo-input-enabled");
+                    if (!input.value || input.value === "0") input.value = "1";
                 });
             } else {
                 machineInputs.forEach((input) => {
                     input.disabled = true;
-                    input.classList.remove("swo-input-enabled"); input.classList.add("swo-input-disabled");
+                    input.classList.remove("swo-input-enabled");
+                    input.classList.add("swo-input-disabled");
                     input.value = "";
                 });
             }
-            checkboxes.forEach((checkbox) => {
-                if (checkbox.checked != this.checked) {
-                    checkbox.checked = this.checked;
-                }
+            allCheckboxes.forEach((cb) => {
+                cb.checked = this.checked;
             });
         });
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        div_boxes.appendChild(div);
     }
+
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    div_boxes.appendChild(div);
 }
 
 function automateCheckbox(checkbox, machineInput, operationName, markedProcesses, edit) {

@@ -21,6 +21,9 @@
     <input type="hidden" name="workOrder" value="{{ $workOrder->id }}">
     <input type="hidden" name="molding" value="{{ $molding->id }}">
     <input type="hidden" name="idClass" id="idClass">
+    @if(request('from_master') == 1 || auth()->user()->perfil == 3)
+        <input type="hidden" name="from_master" value="1">
+    @endif
     <div class="main-layout">
         <div class="wrapper">
             <h3>Información de la orden de trabajo</h3>
@@ -36,11 +39,11 @@
             </div>
         </div>
 
-        <!--Segunda parte del formulario-->
+        <!--Segunda parte del formulario: Procesos (Programación de OT)-->
         <div class="div-boxes hidden" hidden id="casillas">
-            <h3>Procesos y numero de máquinas disponibles</h3>
+            <h3>Procesos y número de máquinas disponibles</h3>
             <div class="sections">
-                <!--Se inserta el algoritmos para generar las casillas atraves de JavaScript-->
+                <!--Se inserta el algoritmo para generar las casillas a través de JavaScript-->
             </div>
         </div>
     </div>

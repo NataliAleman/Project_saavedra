@@ -142,8 +142,8 @@ class WOController extends Controller
             'fecha_compra' => 'required|date',
             'orden_compra' => 'required|string|max:25|regex:/^[A-Za-z0-9-]+$/',
             'cliente' => 'required|string',
-            'proveedor_material' => 'required|string',
-            'semana_entrega_cliente' => 'required|string',
+            'proveedor_material' => 'nullable|string',
+            'semana_entrega_cliente' => 'nullable|string',
             'fecha_entrega_cliente' => 'required|date',
         ], [
             'workOrder.unique' => 'La Orden de Trabajo ingresada ya existe.',
@@ -155,8 +155,6 @@ class WOController extends Controller
             'orden_compra.max' => 'La Orden de Compra no puede exceder los 25 caracteres.',
             'orden_compra.regex' => 'La Orden de Compra solo admite números, letras y guiones, sin espacios.',
             'cliente.required' => 'El nombre del cliente es obligatorio.',
-            'proveedor_material.required' => 'El proveedor de material es obligatorio.',
-            'semana_entrega_cliente.required' => 'El No. de Semana es obligatorio.',
             'fecha_entrega_cliente.required' => 'La Fecha Entrega Comprometida con Cliente es obligatoria.',
         ]);
 
@@ -187,7 +185,15 @@ class WOController extends Controller
         $ot->nombre_producto = $molding ? $molding->nombre : $request->input('nombre_producto');
         $ot->cantidad = 0;
         $ot->proveedor_material = $request->input('proveedor_material');
-        $ot->semana_entrega_cliente = $request->input('semana_entrega_cliente');
+        if ($fechaEntrega) {
+            try {
+                $ot->semana_entrega_cliente = (string) (int) \Carbon\Carbon::parse($fechaEntrega)->format('W');
+            } catch (\Exception $e) {
+                $ot->semana_entrega_cliente = $request->input('semana_entrega_cliente');
+            }
+        } else {
+            $ot->semana_entrega_cliente = $request->input('semana_entrega_cliente');
+        }
         $ot->fecha_entrega_cliente = $fechaEntrega;
         $ot->save();
 
@@ -199,7 +205,7 @@ class WOController extends Controller
             'id_ot' => $ot->id,
         ]);
 
-        return redirect()->route('showWO', $ot->id)->with('success', "¡Orden de Trabajo {$ot->id} creada exitosamente! Ahora puede dar de alta sus clases.");
+        return redirect()->route('showWO', ['workOrder' => $ot->id, 'from_master' => 1])->with('success', "¡Orden de Trabajo {$ot->id} creada exitosamente! Ahora puede dar de alta sus clases.");
     }
 
     /**
@@ -212,8 +218,8 @@ class WOController extends Controller
             'fecha_compra' => 'required|date',
             'orden_compra' => 'required|string|max:25|regex:/^[A-Za-z0-9-]+$/',
             'cliente' => 'required|string',
-            'proveedor_material' => 'required|string',
-            'semana_entrega_cliente' => 'required|string',
+            'proveedor_material' => 'nullable|string',
+            'semana_entrega_cliente' => 'nullable|string',
             'fecha_entrega_cliente' => 'required|date',
         ], [
             'workOrderSelect.required' => 'Debe seleccionar una Orden de Trabajo a modificar.',
@@ -222,9 +228,7 @@ class WOController extends Controller
             'orden_compra.max' => 'La Orden de Compra no puede exceder los 25 caracteres.',
             'orden_compra.regex' => 'La Orden de Compra solo admite números, letras y guiones, sin espacios.',
             'cliente.required' => 'El nombre del cliente es obligatorio.',
-            'proveedor_material.required' => 'El proveedor de material es obligatorio.',
-            'semana_entrega_cliente.required' => 'El No. de Semana es obligatorio.',
-            'fecha_entrega_cliente.required' => 'La F. Compromertida con el Cliente es obligatoria.',
+            'fecha_entrega_cliente.required' => 'La F. Comprometida con el Cliente es obligatoria.',
         ]);
 
         $fixDate = function ($dateStr) {
@@ -247,8 +251,18 @@ class WOController extends Controller
         $ot->fecha_compra = $fechaCompra;
         $ot->orden_compra = strtoupper(str_replace(' ', '', trim($request->input('orden_compra'))));
         $ot->cliente = $request->input('cliente');
-        $ot->proveedor_material = $request->input('proveedor_material');
-        $ot->semana_entrega_cliente = $request->input('semana_entrega_cliente');
+        if ($request->filled('proveedor_material')) {
+            $ot->proveedor_material = $request->input('proveedor_material');
+        }
+        if ($fechaEntrega) {
+            try {
+                $ot->semana_entrega_cliente = (string) (int) \Carbon\Carbon::parse($fechaEntrega)->format('W');
+            } catch (\Exception $e) {
+                if ($request->filled('semana_entrega_cliente')) {
+                    $ot->semana_entrega_cliente = $request->input('semana_entrega_cliente');
+                }
+            }
+        }
         $ot->fecha_entrega_cliente = $fechaEntrega;
         $ot->save();
 
@@ -283,11 +297,13 @@ class WOController extends Controller
 
         if ($request->has('class_orders') && is_array($request->input('class_orders'))) {
             $materials = $request->input('class_materials', []);
+            $proveedores = $request->input('class_proveedores', []);
             foreach ($request->input('class_orders') as $classId => $qty) {
                 $clase = Clase::find($classId);
                 if ($clase && $clase->id_ot == $ot->id) {
                     $newQty = max(0, (int) $qty);
                     $newMat = isset($materials[$classId]) && trim($materials[$classId]) !== '' ? trim($materials[$classId]) : null;
+                    $newProv = isset($proveedores[$classId]) && trim($proveedores[$classId]) !== '' ? trim($proveedores[$classId]) : null;
                     $classChanged = false;
 
                     if ($clase->pedido != $newQty || $clase->piezas != $newQty) {
@@ -298,6 +314,11 @@ class WOController extends Controller
 
                     if ($clase->material != $newMat) {
                         $clase->material = $newMat;
+                        $classChanged = true;
+                    }
+
+                    if ($clase->proveedor != $newProv) {
+                        $clase->proveedor = $newProv;
                         $classChanged = true;
                     }
 
@@ -315,6 +336,7 @@ class WOController extends Controller
                 $nombre = $newClass['nombre'] ?? null;
                 $cantidad = (int) ($newClass['cantidad'] ?? 0);
                 $material = isset($newClass['material']) && trim($newClass['material']) !== '' ? trim($newClass['material']) : null;
+                $proveedor = isset($newClass['proveedor']) && trim($newClass['proveedor']) !== '' ? trim($newClass['proveedor']) : null;
 
                 if ($nombre && $cantidad > 0) {
                     // Check if class already exists
@@ -327,6 +349,7 @@ class WOController extends Controller
                         $class->piezas = $cantidad;
                         $class->tamanio = 'Chico';
                         $class->material = $material;
+                        $class->proveedor = $proveedor;
                         $class->save();
 
                         $controllerProductionTime = new \App\Http\Controllers\TiemposProduccionController();
@@ -630,25 +653,35 @@ class WOController extends Controller
     public function generatePDF(string $idWOrder)
     {
         $workOrder = Orden_trabajo::query()->find($idWOrder, ['*']);
+        if (!$workOrder) {
+            return redirect()->back()->with('error', 'Orden de trabajo no encontrada');
+        }
         $molding = Moldura::query()->find($workOrder->id_moldura, ['*']);
 
         $classes = $this->classController->getClasses($workOrder);
-        $classes = $classes->count() == 0 ? null : $classes;
+        $classes = ($classes && $classes->count() > 0) ? $classes : null;
         $processes = null;
         if ($classes) {
             $processesFounded = $this->classController->getClassProcesses($classes);
             if ($processesFounded != null) {
                 $processes = [];
-                //Obtener el nombre del campo del proceso
+                // Obtener el nombre del campo del proceso y su número de máquinas
                 foreach ($processesFounded as $idClass => $process) {
-                    $processes[$idClass] = "";
-                    foreach ($process as $processName => $value) {
-                        $processes[$idClass] .= $this->nombreProceso($processName) . ", ";
+                    $processesList = [];
+                    foreach ($process as $processName => $numMachines) {
+                        $label = $this->nombreProceso($processName);
+                        if ($numMachines && intval($numMachines) > 1) {
+                            $processesList[] = "{$label} ({$numMachines} máq.)";
+                        } else {
+                            $processesList[] = $label;
+                        }
                     }
+                    $processes[$idClass] = implode(', ', $processesList);
                 }
             }
         }
         $pdf = FacadePdf::loadView('wo_views.pdf_wo', compact('workOrder', 'molding', 'classes', 'processes'));
+        $pdf->setPaper('letter', 'landscape');
         return $pdf->download('Orden_de_trabajo_' . $workOrder->id . '.pdf');
     }
 

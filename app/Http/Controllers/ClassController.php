@@ -96,24 +96,31 @@ class ClassController extends Controller
             return redirect()->back()->with('error', '¡La clase ingresada ya existe en la orden de trabajo!');
         }
 
+        // Validar campos obligatorios
+        if (empty($request->input('class'))) {
+            return redirect()->back()->with('error', '¡El tipo de clase es obligatorio!');
+        }
+        if (empty($request->input('order')) || intval($request->input('order')) <= 0) {
+            return redirect()->back()->with('error', '¡La cantidad / pedido es obligatoria!');
+        }
+
         // Almacenar los datos ingresados de la clase.
         $workOrderModel = Orden_trabajo::find($request->input('workOrder'));
+        $prov = $request->input('proveedor_fundicion') ?? $request->input('proveedor_material');
+
         $class = new Clase();
         $class->id_ot = $request->input('workOrder');
         $class->nombre = $request->input('class');
         $class->material = $request->input('material');
-        $class->pedido = $request->input('order') ?? ($workOrderModel ? $workOrderModel->cantidad : 0);
+        $class->proveedor = (!empty($prov) && trim($prov) !== '') ? trim($prov) : null;
+        $class->pedido = $request->input('order');
         $class->piezas = $request->input('pieces') ?? $class->pedido;
-        $class->fecha_inicio = $request->input('start_date');
-        $class->hora_inicio = $request->input('start_time');
+        $class->fecha_inicio = $request->input('start_date') ?? now()->toDateString();
+        $class->hora_inicio = $request->input('start_time') ?? now()->toTimeString();
         $class->tamanio = $request->input('size') ?? 'Chico';
         $class->composicion_quimica = $composicion;
         $class->tipo_soldadura = $request->input('tipo_soldadura');
         $class->seccion = null;
-
-        if ($class->nombre === null) {
-            return redirect()->back()->with('error', '¡El nombre de la clase no puede estar vacío!');
-        }
 
         $class->save();
 
@@ -130,13 +137,15 @@ class ClassController extends Controller
         SystemLog::create([
             'user_matricula' => auth()->user()->matricula,
             'action' => 'Cargo de Clase de OT',
-            'details' => "Se registró la clase {$class->nombre} en la OT {$request->input('workOrder')} con {$class->piezas} piezas.",
-            'ot' => $request->input('workOrder'),
-            'clase' => $class->nombre,
             'id_ot' => $request->input('workOrder'),
         ]);
 
-        return redirect()->route('showWO', ['workOrder' => $request->input('workOrder')])->with('success', "¡La clase se ha registrado con éxito!");
+        $redirectParams = ['workOrder' => $request->input('workOrder')];
+        if ($request->filled('from_master') || auth()->user()->perfil == 3) {
+            $redirectParams['from_master'] = 1;
+        }
+
+        return redirect()->route('showWO', $redirectParams)->with('success', "¡La clase se ha registrado con éxito!");
     }
 
     /**
@@ -178,6 +187,10 @@ class ClassController extends Controller
             $class->piezas = $request->input('pieces') ?? $class->piezas;
             $class->pedido = $request->input('order') ?? $class->pedido;
         }
+        if ($request->has('proveedor_fundicion') || $request->has('proveedor_material')) {
+            $prov = $request->input('proveedor_fundicion') ?? $request->input('proveedor_material');
+            $class->proveedor = (!empty($prov) && trim($prov) !== '') ? trim($prov) : null;
+        }
         $class->save(); //Guardo los cambios.
 
         //Establecer los tiempos de producción
@@ -214,7 +227,12 @@ class ClassController extends Controller
             return redirect()->back()->with("success", "¡La clase {$class->nombre} se ha editado con éxito!");
         }
 
-        return redirect()->route('showWO', ['workOrder' => $request->input('workOrder')])->with("success", "¡La clase {$class->nombre} se ha editado con éxito!");
+        $redirectParams = ['workOrder' => $request->input('workOrder')];
+        if ($request->filled('from_master') || auth()->user()->perfil == 3) {
+            $redirectParams['from_master'] = 1;
+        }
+
+        return redirect()->route('showWO', $redirectParams)->with("success", "¡La clase {$class->nombre} se ha editado con éxito!");
     }
 
 
@@ -256,7 +274,11 @@ class ClassController extends Controller
             $param = "success";
         }
         if ($workOrderParam == null) {
-            return redirect()->route('showWO', ['workOrder' => $workOrder->id])->with($param, $text); //Redirecciono a la vista de registro de la OT
+            $redirectParams = ['workOrder' => $workOrder->id];
+            if (request('from_master') == 1 || auth()->user()->perfil == 3) {
+                $redirectParams['from_master'] = 1;
+            }
+            return redirect()->route('showWO', $redirectParams)->with($param, $text); //Redirecciono a la vista de registro de la OT
         }
     }
         /**
