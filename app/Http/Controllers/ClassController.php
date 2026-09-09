@@ -476,7 +476,8 @@ class ClassController extends Controller
             $dateAux = new DateTime($date->format('Y-m-d H:i:s'));
             //Se calcula cuanto tiempo se tarda en generar una pieza para calcular el tiempo de retraso entre el procesos
             $piecesProcesses = [];
-            switch ($class->nombre) {
+            $baseType = $class->getBaseType();
+            switch ($baseType) {
                 case "Bombillo":
                     $piecesProcesses = ["cepillado", "desbaste", "revLaterales", "primeraOpeSoldadura", "barrenoManiobra", "segundaOpeSoldadura", "soldadura", "soldaduraPTA", "rectificado", "asentado", "revCalificado", "acabadoBombillo", "barrenoProfundidad", "cavidades", "copiado", "offset", "palomas", "rebajes", "grabado"];
                     break;
@@ -504,7 +505,10 @@ class ClassController extends Controller
                     break;
             }
 
-            $delayTime = tiempoproduccion::query()->where('id_clase', '=', $class->id, 'and')->where('proceso', '=', $piecesProcesses[$i - $counter], 'and')->first();
+            $procKey = $i - $counter;
+            $delayTime = (isset($piecesProcesses[$procKey])) 
+                ? tiempoproduccion::query()->where('id_clase', '=', $class->id, 'and')->where('proceso', '=', $piecesProcesses[$procKey], 'and')->first() 
+                : null;
             if ($delayTime) {
                 //Agregar el factor de seguridad
                 $safetyFactor = $delayTime->tiempo * .08;
@@ -533,7 +537,12 @@ class ClassController extends Controller
             $previousProcess = $process_counter[0];
             $counter = $process_counter[1];
 
-            $date = new DateTime($previousProcess->fecha_fin);
+            if ($previousProcess) {
+                $date = new DateTime($previousProcess->fecha_fin);
+            } else {
+                $startDateStr = ($class->fecha_inicio ?? now()->toDateString()) . " " . ($class->hora_inicio ?? "06:00:00");
+                $date = new DateTime($startDateStr);
+            }
         }
         return $date;
     }
@@ -585,12 +594,17 @@ class ClassController extends Controller
     public function calculatePreviousProcess($processes, $i, $class)
     {
         $counter = 1;
-        do {
-            $previousProcess = Fecha_proceso::query()->where('proceso', '=', $processes[$i - $counter], 'and')->where('clase', '=', $class->id, 'and')->first();
-            if ($previousProcess == null) {
-                $counter++;
+        $previousProcess = null;
+        while (($i - $counter) >= 0) {
+            $procName = $processes[$i - $counter] ?? null;
+            if ($procName) {
+                $previousProcess = Fecha_proceso::query()->where('proceso', '=', $procName, 'and')->where('clase', '=', $class->id, 'and')->first();
+                if ($previousProcess != null) {
+                    break;
+                }
             }
-        } while ($previousProcess == null);
+            $counter++;
+        }
         return [$previousProcess, $counter];
     }
         /**
@@ -669,8 +683,8 @@ class ClassController extends Controller
      */
     public function pieces_machShift($i, $clase)
     {
-
-        switch ($clase->nombre) {
+        $baseType = $clase->getBaseType();
+        switch ($baseType) {
             case "Bombillo":
                 $procesos = ["cepillado", "desbaste", "revLaterales", "primeraOpeSoldadura", "barrenoManiobra", "segundaOpeSoldadura", "soldadura", "soldaduraPTA", "rectificado", "asentado", "revCalificado", "acabadoBombillo", "barrenoProfundidad", "cavidades", "copiado", "offset", "palomas", "rebajes", "grabado"];
                 break;
@@ -702,10 +716,13 @@ class ClassController extends Controller
         }
 
         $juegos = 0;
-        $t_estandar = tiempoproduccion::query()->where('id_clase', '=', $clase->id, 'and')->where('proceso', '=', $procesos[$i], 'and')->first();
-        if ($t_estandar && $t_estandar->tiempo != 0) {
-            $juegos = 420 / $t_estandar->tiempo;
-            $juegos = floor($juegos * 10) / 10;
+        $procName = $procesos[$i] ?? null;
+        if ($procName) {
+            $t_estandar = tiempoproduccion::query()->where('id_clase', '=', $clase->id, 'and')->where('proceso', '=', $procName, 'and')->first();
+            if ($t_estandar && $t_estandar->tiempo != 0) {
+                $juegos = 420 / $t_estandar->tiempo;
+                $juegos = floor($juegos * 10) / 10;
+            }
         }
         return $juegos;
     }

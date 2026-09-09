@@ -1299,18 +1299,13 @@ function createCheckboxAll(edit) {
 function automateCheckbox(checkbox, machineInput, operationName, markedProcesses, edit) {
     checkbox.checked = true;
     machineInput.required = true;
-    // //Si el proceso es de soldadura, se muestra desmarcado el checkbox y el input se deshabilita
-    // if (operationName == "soldadura" || operationName == "soldaduraPTA") {
-    //     checkbox.className = "checkbox-soldaduras";
-    //     machineInput.className = "input-machine-soldaduras";
-    //     checkbox.checked = false;
-    //     machineInput.disabled = true;
-    // }
+    machineInput.value = "1";
 
     if (markedProcesses !== null) {
         //Si el proceso ya ha sido seleccionado anteriormente en la clase, se muestra marcado el checkbox y se muestran las maquinas en el input
         checkbox.checked = false;
         machineInput.disabled = true;
+        machineInput.value = "";
         if (markedProcesses !== undefined) {
             if (markedProcesses[operationName] != undefined) {
                 checkbox.checked = true;
@@ -1353,6 +1348,9 @@ function changeStatusCheckbox(checkbox, machineInput) {
         //Si el checkbox se marca
         machineInput.disabled = false;
         machineInput.classList.remove("swo-input-disabled"); machineInput.classList.add("swo-input-enabled");
+        if (!machineInput.value || machineInput.value === "0") {
+            machineInput.value = "1";
+        }
     } else {
         //Si el checkbox se desmarca
         machineInput.disabled = true;

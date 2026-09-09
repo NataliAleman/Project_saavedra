@@ -734,7 +734,8 @@ class WOController extends Controller
 
         //Establecer el orden de los procesos
         $processesInOrder = array();
-        switch ($class->nombre) {
+        $baseType = $class->getBaseType();
+        switch ($baseType) {
             case "Bombillo":
             case "Molde":
                 $processesInOrder = ["cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "acabadoMolde", "barreno_profundidad", "cavidades", "copiado", "offSet", "palomas", "rebajes", "grabado"];
@@ -1590,7 +1591,8 @@ class WOController extends Controller
 
             $procesosFounded = Procesos::query()->where('id_clase', $clase->id)->first();
             $processesInOrder = [];
-            switch ($clase->nombre) {
+            $baseType = $clase->getBaseType();
+            switch ($baseType) {
                 case "Bombillo":
                 case "Molde":
                     $processesInOrder = ["cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "acabadoMolde", "barreno_profundidad", "cavidades", "copiado", "offSet", "palomas", "rebajes", "grabado"];
@@ -1613,6 +1615,9 @@ class WOController extends Controller
                     break;
                 case "Cabeza de Soplo":
                     $processesInOrder = ["primeraOperacionCabezaSoplo", "segundaOperacionCabezaSoplo"];
+                    break;
+                default:
+                    $processesInOrder = [];
                     break;
             }
 

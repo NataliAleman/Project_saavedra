@@ -75,62 +75,38 @@ class tiemposProduccionController extends Controller
      */
     public function getProductionTimes($class)
     {
-        switch ($class->nombre) {
+        $baseType = $class->getBaseType();
+        switch ($baseType) {
             case "Bombillo":
                 return match ($class->tamanio) {
                     'Chico' => ['Cepillado' => 52, 'Desbaste Exterior' => 22, 'Revision Laterales' => 20, 'Primera Operacion' => 24, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Bombillo' => 25, 'Barreno Profundidad' => 27, 'Cavidades' => 42, 'Copiado' => 27, 'Off Set' => 16, 'Palomas' => 12, 'Rebajes' => 20, 'Grabado' => 12,],
-
                     'Mediano' => ['Cepillado' => 60, 'Desbaste Exterior' => 30, 'Revision Laterales' => 24, 'Primera Operacion' => 28, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 28, 'Soldadura' => 30, 'Soldadura PTA' => 30, 'Rectificado' => 13, 'Asentado' => 24, 'Calificado' => 24, 'Acabado Bombillo' => 27, 'Barreno Profundidad' => 40, 'Cavidades' => 34, 'Copiado' => 29, 'Off Set' => 16, 'Palomas' => 12, 'Rebajes' => 20, 'Grabado' => 12,],
-
                     'Grande' => ['Cepillado' => 90, 'Desbaste Exterior' => 35, 'Revision Laterales' => 26, 'Primera Operacion' => 30, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 28, 'Soldadura' => 34, 'Soldadura PTA' => 34, 'Rectificado' => 14, 'Asentado' => 30, 'Calificado' => 26, 'Acabado Bombillo' => 28, 'Barreno Profundidad' => 60, 'Cavidades' => 26, 'Copiado' => 0, 'Off Set' => 0, 'Palomas' => 0, 'Rebajes' => 0, 'Grabado' => 0,],
-                    default => null,
+                    default => ['Cepillado' => 52, 'Desbaste Exterior' => 22, 'Revision Laterales' => 20, 'Primera Operacion' => 24, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Bombillo' => 25, 'Barreno Profundidad' => 27, 'Cavidades' => 42, 'Copiado' => 27, 'Off Set' => 16, 'Palomas' => 12, 'Rebajes' => 20, 'Grabado' => 12,],
                 };
 
             case "Molde":
                 return match ($class->tamanio) {
                     'Chico' => ['Cepillado' => 53, 'Desbaste Exterior' => 22, 'Revision Laterales' => 20, 'Primera Operacion' => 20, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Molde' => 24, 'Barreno Profundidad' => 28, 'Cavidades' => 21, 'Copiado' => 0, 'Off Set' => 0, 'Palomas' => 0, 'Rebajes' => 0, 'Grabado' => 0,],
-
                     'Mediano' => ['Cepillado' => 64, 'Desbaste Exterior' => 30, 'Revision Laterales' => 24, 'Primera Operacion' => 24, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 28, 'Soldadura' => 30, 'Soldadura PTA' => 30, 'Rectificado' => 13, 'Asentado' => 24, 'Calificado' => 24, 'Acabado Molde' => 26, 'Barreno Profundidad' => 40, 'Cavidades' => 17, 'Copiado' => 0, 'Off Set' => 0, 'Palomas' => 0, 'Rebajes' => 0, 'Grabado' => 0,],
-
                     'Grande' => ['Cepillado' => 120, 'Desbaste Exterior' => 35, 'Revision Laterales' => 26, 'Primera Operacion' => 26, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 30, 'Soldadura' => 70, 'Soldadura PTA' => 70, 'Rectificado' => 20, 'Asentado' => 30, 'Calificado' => 26, 'Acabado Molde' => 30, 'Barreno Profundidad' => 90, 'Cavidades' => 13, 'Copiado' => 0, 'Off Set' => 0, 'Palomas' => 0, 'Rebajes' => 0, 'Grabado' => 0,],
-                    default => null,
+                    default => ['Cepillado' => 53, 'Desbaste Exterior' => 22, 'Revision Laterales' => 20, 'Primera Operacion' => 20, 'Barreno Maniobra' => 15, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Molde' => 24, 'Barreno Profundidad' => 28, 'Cavidades' => 21, 'Copiado' => 0, 'Off Set' => 0, 'Palomas' => 0, 'Rebajes' => 0, 'Grabado' => 0,],
                 };
             case "Obturador":
-                    return match ($class->tamanio) {
-                        'Chico', 'Mediano', 'Grande' => ['Operacion Equipo' => 24, 'Soldadura' => 30, 'Soldadura PTA' => 15],
-                        default => null,
-                    };
             case "Fondo":
-                return match ($class->tamanio) {
-                        'Chico', 'Mediano', 'Grande' => ['Operacion Equipo' => 24, 'Soldadura' => 30, 'Soldadura PTA' => 15],
-                        default => null,
-                    };
             case "Embudo":
-                return match ($class->tamanio) {
-                        'Chico', 'Mediano', 'Grande' => ['Operacion Equipo' => 24, 'Soldadura' => 30, 'Soldadura PTA' => 15],
-                        default => null,
-                    };
             case "Candado Obturador":
-                return match ($class->tamanio) {
-                    'Chico', 'Mediano', 'Grande' => ['Operacion Equipo' => 24, 'Soldadura' => 30, 'Soldadura PTA' => 15],
-                    default => null,
-                };
+                return ['Operacion Equipo' => 24, 'Soldadura' => 30, 'Soldadura PTA' => 15];
             case "Corona":
-                return match ($class->tamanio) {
-                    'Chico', 'Mediano', 'Grande' => ['Cepillado' => 35, 'Desbaste Exterior' => 26, 'Primera Operacion' => 24, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Bombillo' => 15],
-                    default => null,
-                };
+                return ['Cepillado' => 35, 'Desbaste Exterior' => 26, 'Primera Operacion' => 24, 'Segunda Operacion' => 24, 'Soldadura' => 24, 'Soldadura PTA' => 24, 'Rectificado' => 12, 'Asentado' => 20, 'Calificado' => 22, 'Acabado Bombillo' => 15];
             case "Plato":
-                return match ($class->tamanio) {
-                    'Chico', 'Mediano', 'Grande' => ['Operacion Equipo' => 24, 'Embudo CM' => 24],
-                    default => null,
-                };
+                return ['Barreno Maniobra' => 15, 'Operacion Equipo' => 24];
             case "Cabeza de Soplo":
                 return match ($class->tamanio) {
                     'Chico' => ['Primera Operacion Cabeza Soplo' => 24, 'Segunda Operacion Cabeza Soplo' => 24],
                     'Mediano' => ['Primera Operacion Cabeza Soplo' => 28, 'Segunda Operacion Cabeza Soplo' => 28],
                     'Grande' => ['Primera Operacion Cabeza Soplo' => 32, 'Segunda Operacion Cabeza Soplo' => 32],
-                    default => null,
+                    default => ['Primera Operacion Cabeza Soplo' => 24, 'Segunda Operacion Cabeza Soplo' => 24],
                 };
             default:
                 return null;
@@ -250,7 +226,8 @@ class tiemposProduccionController extends Controller
      */
     public function asignarProcesos($clase)
     {
-        switch ($clase) {
+        $baseType = \App\Models\Clase::normalizeClassName(is_string($clase) ? $clase : ($clase->nombre ?? ''));
+        switch ($baseType) {
             case "Bombillo":
                 return array("cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "barreno_profundidad", "cavidades", "copiado", "offSet", "palomas", "rebajes", "grabado");
             case "Molde":
@@ -265,7 +242,7 @@ class tiemposProduccionController extends Controller
             case "Corona":
                 return array("cepillado", "desbaste_exterior", "pOperacion", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado");
             case "Plato":
-                return array("operacionEquipo", "embudoCM");
+                return array("barreno_maniobra", "operacionEquipo");
             case "Embudo":
                 return array("operacionEquipo", "embudoCM");
             case "Cabeza de Soplo":

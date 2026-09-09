@@ -89,7 +89,8 @@ class ProcessProductionController extends Controller
     public function setOrderedProcess($class)
     {
         //Establecer el orden de los procesos
-        switch ($class->nombre) {
+        $baseType = $class->getBaseType();
+        switch ($baseType) {
             case "Bombillo":
             case "Molde":
                 $processesInOrder = ["cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "acabadoMolde", "barreno_profundidad", "cavidades", "copiado", "offSet", "palomas", "rebajes", "grabado"];
@@ -123,9 +124,11 @@ class ProcessProductionController extends Controller
 
         //Verificar los procesos por los que pasa la clase
         $processesNotEmpty = Procesos::query()->where("id_clase", $class->id)->first();
-        foreach ($processesInOrder as $key => $proc) {
-            if ($processesNotEmpty->$proc == 0) {
-                unset($processesInOrder[$key]);
+        if ($processesNotEmpty) {
+            foreach ($processesInOrder as $key => $proc) {
+                if (isset($processesNotEmpty->$proc) && $processesNotEmpty->$proc == 0) {
+                    unset($processesInOrder[$key]);
+                }
             }
         }
         // Reindexar el array para mantener los índices consecutivos
@@ -133,7 +136,7 @@ class ProcessProductionController extends Controller
 
         // Fallback: if all processes are 0 in DB (legacy data), show all expected processes
         if (empty($processesInOrder)) {
-            switch ($class->nombre) {
+            switch ($baseType) {
                 case "Bombillo":
                 case "Molde":
                     $processesInOrder = ["cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "acabadoMolde"];
@@ -149,6 +152,9 @@ class ProcessProductionController extends Controller
                     break;
                 case "Cabeza de Soplo":
                     $processesInOrder = ["primeraOperacionCabezaSoplo", "segundaOperacionCabezaSoplo"];
+                    break;
+                default:
+                    $processesInOrder = [];
                     break;
             }
         }
@@ -1795,7 +1801,8 @@ class ProcessProductionController extends Controller
         $process = $this->get_processNameDB($processString);
 
         //Establecer el orden de los procesos
-        switch ($class->nombre) {
+        $baseType = $class->getBaseType();
+        switch ($baseType) {
             case "Bombillo":
             case "Molde":
                 $processesInOrder = ["cepillado", "desbaste_exterior", "revision_laterales", "pOperacion", "barreno_maniobra", "sOperacion", "soldadura", "soldaduraPTA", "rectificado", "asentado", "calificado", "acabadoBombillo", "acabadoMolde", "barreno_profundidad", "cavidades", "copiado", "offSet", "palomas", "rebajes", "grabado"];
@@ -1811,6 +1818,9 @@ class ProcessProductionController extends Controller
                 break;
             case "Plato":
                 $processesInOrder = ["barreno_maniobra", "operacionEquipo"];
+                break;
+            case "Embudo":
+                $processesInOrder = ["operacionEquipo", "embudoCM"];
                 break;
             case "Cabeza de Soplo":
                 $processesInOrder = ["primeraOperacionCabezaSoplo", "segundaOperacionCabezaSoplo"];
