@@ -1863,11 +1863,10 @@ class AlmacenFundicionController extends Controller
                 return false;
             }
 
-            // 1. DB check
+            // 1. DB check — buscar SOLO en la OT exacta actual para no contaminar el estado
+            // con aprobaciones/rechazos de reprocesos anteriores o posteriores.
             $dbApproved = LiberacionModeloFundicion::query()
-                ->where(function ($q) use ($baseOt) {
-                    $q->where('ot', 'LIKE', $baseOt . '%');
-                })
+                ->where('ot', '=', $otFull)
                 ->where('tipo_modelo', '=', $tipo)
                 ->where('estado', '=', 'aprobado')
                 ->exists();
@@ -1946,51 +1945,44 @@ class AlmacenFundicionController extends Controller
                 return false;
             }
 
-            // 1. DB check: Check if the latest status is rechazado
+            // 1. DB check: Check if the final estado for THIS exact OT is 'rechazado'.
+            // IMPORTANTE: solo estado='rechazado' (final) bloquea la PFM.
+            // decision='rechazar' con estado='pendiente' es un borrador de Calidad y NO debe bloquear.
+            // NO usar LIKE $baseOt.'%' para evitar que rechazos de reprocesos contaminen la OT base.
             $latest = LiberacionModeloFundicion::query()
-                ->where(function ($q) use ($baseOt) {
-                    $q->where('ot', 'LIKE', $baseOt . '%');
-                })
+                ->where('ot', '=', $otFull)
                 ->where('tipo_modelo', '=', $tipo)
                 ->orderBy('id', 'desc')
                 ->first();
 
-            if ($latest && ($latest->estado === 'rechazado' || $latest->decision === 'rechazar')) {
+            if ($latest && $latest->estado === 'rechazado') {
                 return true;
             }
 
-            // 2. Filesystem check (FDRDM directory)
-            $allOtNames = FundicionHistory::where('ot', '=', $baseOt, 'or')
-                ->where('ot', 'LIKE', $baseOt . '_R%', 'or')
-                ->where('ot', 'LIKE', $baseOt . '_%_R%', 'or')
-                ->pluck('ot')
-                ->toArray();
-            if (!in_array($otFull, $allOtNames)) {
-                $allOtNames[] = $otFull;
-            }
-
+            // 2. Filesystem check (FDRDM directory) — solo en la OT actual, no en reprocesos
+            $folderExact = $this->sanitizePath($this->normalizeOTName($otFull));
             $claseNorm = str_replace(' ', '_', strtolower($tipo));
-            foreach ($allOtNames as $relOt) {
-                $folders = [
-                    trim($relOt),
-                    preg_replace('/[\s]+/', '_', trim(preg_replace('/[^A-Za-z0-9\-]/', '_', $relOt)))
+
+            $foldersToCheck = [
+                $folderExact,
+                trim($otFull),
+                preg_replace('/[\s]+/', '_', trim(preg_replace('/[^A-Za-z0-9\-]/', '_', $otFull)))
+            ];
+            $foldersToCheck = array_unique(array_filter($foldersToCheck));
+
+            foreach ($foldersToCheck as $relFolder) {
+                $pathsToCheck = [
+                    self::CALIDAD_DIR . '/' . $relFolder . '/Documentos_Rechazados/FDRDM',
+                    self::ALMACEN_DIR . '/' . $relFolder . '/Documentos_Rechazados/FDRDM',
                 ];
-                $folders = array_unique($folders);
 
-                foreach ($folders as $relFolder) {
-                    $pathsToCheck = [
-                        self::CALIDAD_DIR . '/' . $relFolder . '/Documentos_Rechazados/FDRDM',
-                        self::ALMACEN_DIR . '/' . $relFolder . '/Documentos_Rechazados/FDRDM',
-                    ];
-
-                    foreach ($pathsToCheck as $dir) {
-                        if (\Storage::disk('local')->exists($dir)) {
-                            $files = \Storage::disk('local')->files($dir);
-                            foreach ($files as $file) {
-                                $baseName = strtolower(basename($file));
-                                if (strpos($baseName, 'f_ccl_rdm') !== false && strpos($baseName, $claseNorm) !== false) {
-                                    return true;
-                                }
+                foreach ($pathsToCheck as $dir) {
+                    if (\Storage::disk('local')->exists($dir)) {
+                        $files = \Storage::disk('local')->files($dir);
+                        foreach ($files as $file) {
+                            $baseName = strtolower(basename($file));
+                            if (strpos($baseName, 'f_ccl_rdm') !== false && strpos($baseName, $claseNorm) !== false) {
+                                return true;
                             }
                         }
                     }
