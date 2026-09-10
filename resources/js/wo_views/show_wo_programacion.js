@@ -392,13 +392,25 @@ function insertWOButtons(fragment) {
 function createScrollableTable(classes = null) {
     let scrollableTable = document.createElement("div");
     scrollableTable.className = "scrollabe-table";
-    if (classes != null) {
+    if (classes != null && classes.length > 0) {
         scrollableTable.appendChild(createTableClasses(classes));
     } else {
-        let div_alert = document.createElement("div");
-        div_alert.className = "alert alert-danger text-center";
-        div_alert.textContent = "Aún no se han registrado clases";
-        scrollableTable.appendChild(div_alert);
+        let emptyStateDiv = document.createElement("div");
+        emptyStateDiv.className = "empty-classes-state";
+        emptyStateDiv.style.cssText = "display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; text-align: center; gap: 8px; background: #ffffff; border-radius: 12px;";
+        emptyStateDiv.innerHTML = `
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(3, 57, 102, 0.06); display: flex; align-items: center; justify-content: center; margin-bottom: 2px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#033966" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                    <line x1="7" y1="8" x2="17" y2="8"></line>
+                    <line x1="7" y1="12" x2="13" y2="12"></line>
+                    <line x1="7" y1="16" x2="10" y2="16"></line>
+                </svg>
+            </div>
+            <span style="font-size: 0.95em; font-weight: 700; color: #033966;">Aún no se han registrado clases</span>
+            <span style="font-size: 0.82em; color: #64748b; max-width: 320px;">Esta Orden de Trabajo no tiene clases registradas aún.</span>
+        `;
+        scrollableTable.appendChild(emptyStateDiv);
     }
     return scrollableTable;
 }
@@ -1061,3 +1073,90 @@ if (window.classesDataUrl && window.workOrder && window.workOrder.id) {
         } catch (e) {}
     }, 15000);
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sel = document.getElementById("workOrders") || document.getElementById("workOrderSelect");
+    if (sel) {
+        const placeholder = Array.from(sel.options).find(o => o.value === "");
+        const dataOptions = Array.from(sel.options).filter(o => o.value !== "");
+        dataOptions.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+        sel.innerHTML = "";
+        if (placeholder) sel.appendChild(placeholder);
+        dataOptions.forEach(opt => sel.appendChild(opt));
+    }
+});
+
+let isSubmittingForm = false;
+
+document.addEventListener("DOMContentLoaded", function () {
+    let form = document.getElementById("form");
+    if (form) {
+        form.addEventListener("submit", function () {
+            isSubmittingForm = true;
+        });
+    }
+});
+
+window.hasUnsavedChanges = function () {
+    if (isSubmittingForm) return false;
+
+    let btn_saveProcess = document.getElementById("btn-saveProcess");
+    let btn_addClass = document.querySelector(".btn-addClass:not(#btn-saveProcess):not(#btn-saveClass)");
+    let targetBtn = btn_saveProcess || btn_addClass;
+
+    if (!targetBtn) return false;
+
+    let isVisible = !targetBtn.hidden && targetBtn.offsetParent !== null && !targetBtn.classList.contains("hidden");
+
+    return Boolean(isVisible && !targetBtn.disabled);
+};
+
+window.handleQuickWoChange = function (selectElem, baseUrl) {
+    if (!selectElem || !selectElem.value) return;
+
+    let currentWO = window.workOrder ? String(window.workOrder.id) : "";
+    let targetWO = String(selectElem.value);
+
+    if (currentWO && targetWO === currentWO) return;
+
+    if (window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+        let confirmLeave = confirm("Tiene cambios pendientes de guardar en esta vista. Si cambia de Orden de Trabajo, los cambios no guardados se perderán.\n\n¿Desea salir sin guardar los cambios?");
+        if (!confirmLeave) {
+            if (currentWO) {
+                selectElem.value = currentWO;
+            }
+            return;
+        }
+    }
+
+    window.location.href = baseUrl + '/' + targetWO;
+};
+
+// ────────────────────────────────────────
+// Interceptar navegación por menú y enlaces
+// ────────────────────────────────────────
+document.addEventListener("click", function (e) {
+    if (isSubmittingForm) return;
+
+    let link = e.target.closest("a");
+    if (!link || !link.href) return;
+
+    let href = link.getAttribute("href");
+    if (!href || href === "#" || href.startsWith("javascript:")) return;
+
+    if (window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+        let confirmLeave = confirm("Tiene cambios pendientes de guardar en esta vista. Si sale hacia otra vista del menú, los cambios no guardados se perderán.\n\n¿Desea salir sin guardar los cambios?");
+        if (!confirmLeave) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+}, true);
+
+window.addEventListener("beforeunload", function (e) {
+    if (!isSubmittingForm && window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
+});
+

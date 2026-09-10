@@ -118,10 +118,24 @@ function selectWorkOrder(workOrders, errorState) {
         select.id = "workOrders";
         select.name = "workOrderSelected";
 
-        for (let workOrder in workOrders) {
+        // Ordenar OTs de menor a mayor numéricamente
+        let sortedWOs = [...workOrders].sort((a, b) => parseInt(a.workOrder, 10) - parseInt(b.workOrder, 10));
+
+        for (let item of sortedWOs) {
             let option = document.createElement("option");
-            option.value = workOrders[workOrder]["workOrder"];
-            option.textContent = `${workOrders[workOrder]["workOrder"]} - ${workOrders[workOrder]["molding"]}`;
+            option.value = item["workOrder"];
+            option.textContent = `OT ${item["workOrder"]} - ${item["molding"]}`;
+
+            // Color: verde tenue si tiene procesos añadidos, amarillo tenue si no los tiene
+            if (item["has_processes"]) {
+                option.style.backgroundColor = "#d1e7dd";
+                option.style.color = "#0f5132";
+                option.style.fontWeight = "500";
+            } else {
+                option.style.backgroundColor = "#fff9c4";
+                option.style.color = "#664d03";
+                option.style.fontWeight = "500";
+            }
             select.appendChild(option);
         }
         formOutline.appendChild(select);

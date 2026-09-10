@@ -433,10 +433,14 @@ tr.drag-over-bottom td {
 
 /* Clases utilitarias de texto */
 .text-center { text-align: center; }
-.font-bold { font-weight: bold; }
+.font-bold { font-weight: bold !important; }
 .font-large { font-size: 15px; }
 .p-0 { padding: 0 !important; }
 .text-uppercase { text-transform: uppercase; }
+
+.excel-table td:not([contenteditable="true"]):not(.date-cell) {
+    font-weight: 700 !important;
+}
 
 .cell-ot-val {
     font-size: 13px !important;
@@ -673,15 +677,6 @@ tr.drag-over-bottom td {
         background-color: #033966 !important;
         color: #ffffff !important;
         font-size: 7px !important;
-        position: static !important;
-        top: auto !important;
-    }
-
-    .excel-table thead, thead {
-        display: table-header-group !important;
-        position: static !important;
-        top: auto !important;
-        transform: none !important;
     }
 
     tr {
@@ -690,110 +685,228 @@ tr.drag-over-bottom td {
     }
 }
 
-/* ── Estilos de Modales SweetAlert2 (Identidad GIS Glassmorphism) ── */
+/* ── Estilos de Modales SweetAlert2 (Identidad Unificada GIS) ── */
 .swal2-container.swal2-backdrop-show {
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    background: rgba(0, 15, 30, 0.75) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.65) !important;
 }
 
 .gis-swal-popup,
+.gis-date-modal-popup,
 .swal2-popup {
-    background: linear-gradient(135deg, rgba(2, 38, 68, 0.98), rgba(3, 57, 102, 0.98)) !important;
-    border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
-    border-radius: 18px !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(56, 189, 248, 0.25) !important;
-    color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    color: #1e293b !important;
     font-family: 'Poppins', sans-serif !important;
-    padding: 2rem !important;
+    padding: 24px 30px !important;
 }
 
 .gis-swal-title,
+.gis-date-modal-title,
 .swal2-title {
-    color: #ffffff !important;
-    font-size: 1.55rem !important;
+    color: #033966 !important;
+    font-size: 1.4rem !important;
     font-weight: 800 !important;
-    letter-spacing: -0.01em !important;
-    margin-bottom: 0.75rem !important;
+    text-align: left !important;
+    margin-bottom: 14px !important;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .gis-swal-html,
 .swal2-html-container {
-    color: #cbd5e1 !important;
-    font-size: 1rem !important;
-    line-height: 1.6 !important;
+    color: #334155 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
 }
 
+/* Modal Fechas - Tarjeta de Información */
+.gis-date-modal-info-card {
+    background: #f0f7ff;
+    border: 1px solid #bae6fd;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 100px 180px 1fr;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.88rem;
+    color: #334155;
+}
+
+.gis-date-modal-info-item {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.gis-date-modal-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.gis-date-modal-info-val {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #033966;
+}
+
+/* Modal Fechas - Selección de Modo */
+.gis-date-modal-mode-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.gis-date-modal-mode-box label {
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gis-date-modal-mode-box input[type="radio"] {
+    accent-color: #033966;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Modal Fechas - Contenedor de Tabla */
+.gis-date-modal-table-wrap {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.gis-date-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    color: #1e293b;
+    text-align: center;
+}
+
+.gis-date-modal-table th {
+    background: #033966;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #022644;
+}
+
+.gis-date-modal-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.gis-date-modal-table tr:nth-child(even) td {
+    background-color: #f8fafc;
+}
+
+.gis-date-modal-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Estilos de Inputs y Selects */
+.gis-date-input-clean,
 .gis-swal-select,
 .swal2-select {
-    background-color: rgba(3, 45, 82, 0.95) !important;
-    color: #38bdf8 !important;
-    border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
-    border-radius: 10px !important;
-    padding: 10px 16px !important;
-    font-size: 1.05rem !important;
-    font-weight: 700 !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
     font-family: 'Poppins', sans-serif !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    margin: 1.2rem auto !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
     outline: none !important;
     transition: all 0.2s ease !important;
 }
 
+.gis-date-input-clean:focus,
 .gis-swal-select:focus,
 .swal2-select:focus {
-    border-color: #38bdf8 !important;
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6) !important;
+    border-color: #033966 !important;
+    box-shadow: 0 0 0 3px rgba(3, 57, 102, 0.15) !important;
 }
 
+/* Acciones y Botones */
 .swal2-actions {
-    gap: 14px !important;
-    margin-top: 1.5rem !important;
+    gap: 12px !important;
+    margin-top: 1.25rem !important;
 }
 
 .gis-swal-confirm,
 .swal2-confirm.swal2-styled {
-    background-color: var(--gis-green) !important;
+    background-color: #033966 !important;
     color: #ffffff !important;
-    border-radius: 10px !important;
+    border: 1.5px solid #033966 !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
-    font-size: 0.95rem !important;
-    padding: 12px 24px !important;
-    box-shadow: 0 4px 12px var(--shadow-green) !important;
-    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    font-size: 0.92rem !important;
+    padding: 10px 22px !important;
+    box-shadow: 0 3px 10px rgba(3, 57, 102, 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
 .gis-swal-confirm:hover,
 .swal2-confirm.swal2-styled:hover {
-    transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 8px 18px rgba(10, 133, 4, 0.6) !important;
-}
-
-.gis-swal-confirm:active,
-.swal2-confirm.swal2-styled:active {
-    transform: translateY(1px) scale(0.98) !important;
+    background-color: #0A8504 !important;
+    border-color: #0A8504 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(10, 133, 4, 0.45) !important;
 }
 
 .gis-swal-cancel,
 .swal2-cancel.swal2-styled {
-    background-color: var(--gis-red) !important;
+    background-color: #033966 !important;
     color: #ffffff !important;
-    border-radius: 10px !important;
+    border: 1.5px solid #033966 !important;
+    border-radius: 8px !important;
     font-weight: 700 !important;
-    font-size: 0.95rem !important;
-    padding: 12px 24px !important;
-    box-shadow: 0 4px 12px var(--shadow-red) !important;
-    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    font-size: 0.92rem !important;
+    padding: 10px 22px !important;
+    box-shadow: 0 3px 10px rgba(3, 57, 102, 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
 .gis-swal-cancel:hover,
 .swal2-cancel.swal2-styled:hover {
-    transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 8px 18px rgba(156, 3, 3, 0.6) !important;
+    background-color: #dc2626 !important;
+    border-color: #dc2626 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.45) !important;
 }
 
-.gis-swal-cancel:active,
-.swal2-cancel.swal2-styled:active {
-    transform: translateY(1px) scale(0.98) !important;
+/* Celdas de fechas editables con texto normal (sin negritas) */
+.date-cell .date-display,
+.date-single-box .date-display,
+span.date-display {
+    font-weight: 500 !important;
 }
 

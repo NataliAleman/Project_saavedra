@@ -726,13 +726,60 @@ window.validateWOForm = function () {
     }
 };
 
+let isSubmittingForm = false;
+
 document.addEventListener("DOMContentLoaded", function () {
     let form = document.getElementById("form");
     if (form) {
+        form.addEventListener("submit", function () {
+            isSubmittingForm = true;
+        });
         form.addEventListener("input", window.validateWOForm);
         form.addEventListener("change", window.validateWOForm);
     }
     window.validateWOForm();
+});
+
+window.hasUnsavedChanges = function () {
+    if (isSubmittingForm) return false;
+
+    let btn_saveClass = document.getElementById("btn-saveClass");
+    let btn_addClass = document.querySelector(".btn-addClass:not(#btn-saveProcess):not(#btn-saveClass)");
+    let targetBtn = btn_saveClass || btn_addClass;
+
+    if (!targetBtn) return false;
+
+    let isVisible = !targetBtn.hidden && targetBtn.offsetParent !== null && !targetBtn.classList.contains("hidden");
+
+    return Boolean(isVisible && !targetBtn.disabled);
+};
+
+// ────────────────────────────────────────
+// Interceptar navegación por menú y enlaces
+// ────────────────────────────────────────
+document.addEventListener("click", function (e) {
+    if (isSubmittingForm) return;
+
+    let link = e.target.closest("a");
+    if (!link || !link.href) return;
+
+    let href = link.getAttribute("href");
+    if (!href || href === "#" || href.startsWith("javascript:")) return;
+
+    if (window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+        let confirmLeave = confirm("Tiene cambios pendientes de guardar en esta vista. Si sale hacia otra vista del menú, los cambios no guardados se perderán.\n\n¿Desea salir sin guardar los cambios?");
+        if (!confirmLeave) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+}, true);
+
+window.addEventListener("beforeunload", function (e) {
+    if (!isSubmittingForm && window.hasUnsavedChanges && window.hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
 });
 
 function storeOriginalFormValues() {
@@ -774,3 +821,15 @@ if (window.classesDataUrl && window.workOrder && window.workOrder.id) {
         }
     }, 15000);
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sel = document.getElementById("workOrderSelect");
+    if (sel) {
+        const placeholder = Array.from(sel.options).find(o => o.value === "");
+        const dataOptions = Array.from(sel.options).filter(o => o.value !== "");
+        dataOptions.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+        sel.innerHTML = "";
+        if (placeholder) sel.appendChild(placeholder);
+        dataOptions.forEach(opt => sel.appendChild(opt));
+    }
+});

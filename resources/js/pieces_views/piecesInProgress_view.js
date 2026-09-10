@@ -381,7 +381,7 @@ class FundicionChecklistCard {
     constructor(otId, initialData, container, instanceId) {
         this.otId = otId;
         this.className = instanceId || '';
-        this._instanceId = instanceId ? `${otId}-${instanceId}` : otId;
+        this._instanceId = instanceId ? `${otId}-${instanceId}`.replace(/[^a-zA-Z0-9_-]/g, '_') : otId;
         this._data = initialData;
         this.container = container;
         this._pollTimer = null;
@@ -516,7 +516,8 @@ class FundicionChecklistCard {
         }
 
         // Badge de reproceso
-        const badge = card.querySelector(`#checklist-badge-${this._instanceId}`);
+        const safeId = (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(this._instanceId) : this._instanceId;
+        const badge = card.querySelector(`#checklist-badge-${safeId}`);
         if (badge) {
             badge.classList.toggle("hidden", !(data.isBadgeVisible));
             if (data.badgeText) {
@@ -525,7 +526,7 @@ class FundicionChecklistCard {
         }
 
         // Reconstruir lista de pasos
-        const container = card.querySelector(`#checklist-items-${this._instanceId}`);
+        const container = card.querySelector(`#checklist-items-${safeId}`);
         if (!container) return;
         container.innerHTML = '';
 
@@ -744,6 +745,7 @@ class PlaneacionChecklistCard {
     constructor(otId, claseId, container) {
         this.otId = otId;
         this.claseId = claseId;
+        this._safeClaseId = String(claseId).replace(/[^a-zA-Z0-9_-]/g, '_');
         this.container = container;
         this._pollTimer = null;
         this._mounted = false;
@@ -800,14 +802,14 @@ class PlaneacionChecklistCard {
     _render() {
         const card = document.createElement('div');
         card.className = 'fundicion-checklist-card';
-        card.id = `planeacion-checklist-${this.otId}-${this.claseId}`;
+        card.id = `planeacion-checklist-${this.otId}-${this._safeClaseId}`;
 
         // Contenedores base
         card.innerHTML = `
             <div class="checklist-header">
                 <span class="checklist-title">Planeación</span>
             </div>
-            <div class="checklist-items" id="planeacion-items-${this.otId}-${this.claseId}" style="padding-top: 5px;">
+            <div class="checklist-items" id="planeacion-items-${this.otId}-${this._safeClaseId}" style="padding-top: 5px;">
                 <div class="checklist-item checklist-item--pendiente" title="Pendiente">
                     <div class="checklist-icon-col">
                         <span class="checklist-icon"><img src="${this._getIconFor('pendiente')}" alt="pendiente" class="checklist-state-icon"></span>
@@ -867,7 +869,7 @@ class PlaneacionChecklistCard {
 
     _updateCard(data) {
         if (!this.root) return;
-        const container = this.root.querySelector(`#planeacion-items-${this.otId}-${this.claseId}`);
+        const container = this.root.querySelector(`#planeacion-items-${this.otId}-${this._safeClaseId}`);
         if (!container) return;
 
         const pasosData = data[this.claseId];

@@ -4,8 +4,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const formCreate = document.getElementById("form-create-master-wo");
     const formUpdate = document.getElementById("form-update-master-wo");
 
+    let isSubmittingForm = false;
+
+    if (formCreate) {
+        formCreate.addEventListener("submit", function () {
+            isSubmittingForm = true;
+        });
+    }
+    if (formUpdate) {
+        formUpdate.addEventListener("submit", function () {
+            isSubmittingForm = true;
+        });
+    }
+
+    function hasUnsavedChanges() {
+        const saveModContainer = document.getElementById("save_modifications_container");
+        return Boolean(saveModContainer && saveModContainer.style.display === "flex");
+    }
+
     if (btnCreate && btnModify) {
         btnCreate.addEventListener("click", function () {
+            if (formUpdate && formUpdate.style.display !== "none" && hasUnsavedChanges()) {
+                const confirmLeave = confirm("Tienes cambios sin guardar en la Orden de Trabajo. ¿Estás seguro de que deseas salir sin guardar? Los cambios no guardados se perderán.");
+                if (!confirmLeave) return;
+            }
             btnCreate.classList.add("active");
             btnModify.classList.remove("active");
             formCreate.style.display = "block";
@@ -20,12 +42,46 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    function validateCreateWOForm() {
+        if (!formCreate) return;
+        const btnSubmit = formCreate.querySelector(".btn-save-master");
+        if (!btnSubmit) return;
+
+        const workOrder = document.getElementById("workOrder");
+        const moldingSelected = document.getElementById("moldingSelected");
+        const fechaCompra = document.getElementById("fecha_compra");
+        const ordenCompra = document.getElementById("orden_compra");
+        const cliente = document.getElementById("cliente");
+        const fechaEntregaCliente = document.getElementById("fecha_entrega_cliente");
+
+        const isValid = Boolean(
+            workOrder && workOrder.value.trim() !== "" &&
+            moldingSelected && moldingSelected.value !== "" &&
+            fechaCompra && fechaCompra.value.trim() !== "" &&
+            ordenCompra && ordenCompra.value.trim() !== "" &&
+            cliente && cliente.value !== "" &&
+            fechaEntregaCliente && fechaEntregaCliente.value.trim() !== ""
+        );
+
+        btnSubmit.disabled = !isValid;
+    }
+
+    if (formCreate) {
+        const createInputs = formCreate.querySelectorAll("input, select");
+        createInputs.forEach(el => {
+            el.addEventListener("input", validateCreateWOForm);
+            el.addEventListener("change", validateCreateWOForm);
+        });
+        validateCreateWOForm();
+    }
+
     // Input sanitization & formatting for OT inputs
     const otInputs = [document.getElementById("workOrder")];
     otInputs.forEach(input => {
         if (input) {
             input.addEventListener("input", function () {
                 this.value = this.value.replace(/[^0-9]/g, "").slice(0, 5);
+                validateCreateWOForm();
             });
         }
     });
@@ -38,12 +94,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 val = val.replace(/\s+/g, "");
                 val = val.replace(/[^A-Z0-9-]/g, "");
                 this.value = val.slice(0, 25);
+                validateCreateWOForm();
             });
         }
     });
 
     // Manejar selección de OT en modo Modificar
     const woSelect = document.getElementById("workOrderSelect");
+    let previousWoSelectValue = woSelect ? woSelect.value : "";
+
+    if (woSelect) {
+        const placeholder = Array.from(woSelect.options).find(o => o.value === "");
+        const dataOptions = Array.from(woSelect.options).filter(o => o.value !== "");
+        dataOptions.sort((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10));
+        woSelect.innerHTML = "";
+        if (placeholder) woSelect.appendChild(placeholder);
+        dataOptions.forEach(opt => woSelect.appendChild(opt));
+    }
+
     const btnSaveModify = document.getElementById("btn-save-modify");
     const saveModContainer = document.getElementById("save_modifications_container");
     const btnPdfModify = document.getElementById("btn-pdf-modify");
@@ -249,6 +317,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const woId = woSelect.value;
             if (!woId) return;
 
+            previousWoSelectValue = woId;
+
             const wo = window.workOrdersData.find(w => w.id == woId);
             if (wo) {
                 const actionsContainer = document.getElementById("actions_container");
@@ -366,6 +436,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (btnRemoveExisting) {
                                 btnRemoveExisting.addEventListener("click", function() {
                                     if (confirm("¿Estás seguro de que deseas eliminar esta clase de la Orden de Trabajo?")) {
+                                        isSubmittingForm = true;
                                         const hiddenDelete = document.createElement("input");
                                         hiddenDelete.type = "hidden";
                                         hiddenDelete.name = "deleted_classes[]";
@@ -554,11 +625,53 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        woSelect.addEventListener("change", populateFields);
+        woSelect.addEventListener("change", function () {
+            if (hasUnsavedChanges()) {
+                const confirmSwitch = confirm("Tienes cambios sin guardar en la Orden de Trabajo. ¿Estás seguro de que deseas cambiar de OT sin guardar? Los cambios no guardados se perderán.");
+                if (!confirmSwitch) {
+                    woSelect.value = previousWoSelectValue;
+                    return;
+                }
+            }
+            previousWoSelectValue = woSelect.value;
+            populateFields();
+        });
 
         // Si ya hay una OT seleccionada por URL/query param o por defecto, cargar sus datos
         if (woSelect.value) {
             populateFields();
         }
     }
+
+    // Interceptor global de navegación (enlaces y menú) si hay cambios sin guardar
+    document.addEventListener("click", function (e) {
+        if (isSubmittingForm) return;
+
+        const link = e.target.closest("a");
+        if (!link) return;
+
+        const href = link.getAttribute("href");
+        if (!href || href === "#" || href.startsWith("javascript:")) return;
+
+        if (link.id === "btn-pdf-modify" || link.target === "_blank") return;
+
+        if (hasUnsavedChanges()) {
+            const confirmLeave = confirm("Tienes cambios sin guardar en la Orden de Trabajo. ¿Estás seguro de que deseas salir sin guardar? Los cambios no guardados se perderán.");
+            if (!confirmLeave) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+    }, true);
+
+    // Advertencia al cerrar o recargar la ventana/pestaña si hay cambios sin guardar
+    window.addEventListener("beforeunload", function (e) {
+        if (isSubmittingForm) return;
+
+        if (hasUnsavedChanges()) {
+            e.preventDefault();
+            e.returnValue = "";
+        }
+    });
 });
+

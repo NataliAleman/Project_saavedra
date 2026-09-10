@@ -181,7 +181,21 @@
                             @endif
                         </td>
                         <td>{{ $wo->forma_grabados }}</td>
-                        <td>{{ $wo->proveedor_material }}</td>
+                        @php
+                            $classSuppliers = $wo->clases->map(function($cl) use ($wo) {
+                                return !empty($cl->proveedor) ? trim($cl->proveedor) : (!empty($wo->proveedor_material) ? trim($wo->proveedor_material) : '');
+                            })->filter();
+                            $uniqueSuppliers = $classSuppliers->unique();
+                        @endphp
+                        @if($wo->clases->count() > 0 && $uniqueSuppliers->count() > 1)
+                            <td style="padding: 0;">
+                                @foreach($wo->clases as $cl)
+                                    <div class="subcell-row">{{ !empty($cl->proveedor) ? $cl->proveedor : (!empty($wo->proveedor_material) ? $wo->proveedor_material : '-') }}</div>
+                                @endforeach
+                            </td>
+                        @else
+                            <td>{{ $uniqueSuppliers->first() ?? $wo->proveedor_material ?? '-' }}</td>
+                        @endif
                         <td style="padding: 0;">
                             @if($wo->clases->count() > 0)
                                 @foreach($wo->clases as $cl)
@@ -191,10 +205,64 @@
                                 <div class="subcell-row">{{ $wo->material }}</div>
                             @endif
                         </td>
-                        <td>{{ safeDateParseDisplay($wo->fecha_entrega_fundicion) }}</td>
-                        <td>{{ safeDateParseDisplay($wo->entrega_tecamac) }}</td>
+                        @php
+                            $classFundDates = $wo->clases->map(function($cl) use ($wo) {
+                                return !empty($cl->fecha_entrega_fundicion) ? trim($cl->fecha_entrega_fundicion) : (!empty($wo->fecha_entrega_fundicion) ? trim($wo->fecha_entrega_fundicion) : '');
+                            })->filter();
+                            $uniqueFundDates = $classFundDates->unique();
+                        @endphp
+                        @if($wo->clases->count() > 0 && $uniqueFundDates->count() > 1)
+                            <td style="padding: 0;">
+                                @foreach($wo->clases as $cl)
+                                    @php
+                                        $clFundDate = !empty($cl->fecha_entrega_fundicion) ? $cl->fecha_entrega_fundicion : $wo->fecha_entrega_fundicion;
+                                    @endphp
+                                    <div class="subcell-row">{{ safeDateParseDisplay($clFundDate) }}</div>
+                                @endforeach
+                            </td>
+                        @else
+                            @php $singleFundDate = $uniqueFundDates->first() ?? $wo->fecha_entrega_fundicion; @endphp
+                            <td>{{ safeDateParseDisplay($singleFundDate) }}</td>
+                        @endif
+                        @php
+                            $classTecDates = $wo->clases->map(function($cl) use ($wo) {
+                                return !empty($cl->entrega_tecamac) ? trim($cl->entrega_tecamac) : (!empty($wo->entrega_tecamac) ? trim($wo->entrega_tecamac) : '');
+                            })->filter();
+                            $uniqueTecDates = $classTecDates->unique();
+                        @endphp
+                        @if($wo->clases->count() > 0 && $uniqueTecDates->count() > 1)
+                            <td style="padding: 0;">
+                                @foreach($wo->clases as $cl)
+                                    @php
+                                        $clTecDate = !empty($cl->entrega_tecamac) ? $cl->entrega_tecamac : $wo->entrega_tecamac;
+                                    @endphp
+                                    <div class="subcell-row">{{ safeDateParseDisplay($clTecDate) }}</div>
+                                @endforeach
+                            </td>
+                        @else
+                            @php $singleTecDate = $uniqueTecDates->first() ?? $wo->entrega_tecamac; @endphp
+                            <td>{{ safeDateParseDisplay($singleTecDate) }}</td>
+                        @endif
                         <td><strong>{{ $wo->semana_entrega_cliente }}</strong></td>
-                        <td>{{ safeDateParseDisplay($wo->fecha_real) }}</td>
+                        @php
+                            $classMexDates = $wo->clases->map(function($cl) use ($wo) {
+                                return !empty($cl->fecha_real) ? trim($cl->fecha_real) : (!empty($wo->fecha_real) ? trim($wo->fecha_real) : '');
+                            })->filter();
+                            $uniqueMexDates = $classMexDates->unique();
+                        @endphp
+                        @if($wo->clases->count() > 0 && $uniqueMexDates->count() > 1)
+                            <td style="padding: 0;">
+                                @foreach($wo->clases as $cl)
+                                    @php
+                                        $clMexDate = !empty($cl->fecha_real) ? $cl->fecha_real : $wo->fecha_real;
+                                    @endphp
+                                    <div class="subcell-row">{{ safeDateParseDisplay($clMexDate) }}</div>
+                                @endforeach
+                            </td>
+                        @else
+                            @php $singleMexDate = $uniqueMexDates->first() ?? $wo->fecha_real; @endphp
+                            <td>{{ safeDateParseDisplay($singleMexDate) }}</td>
+                        @endif
                         <td><strong>{{ safeDateParseDisplay($wo->fecha_entrega_cliente) }}</strong></td>
                         <td colspan="2">{{ $wo->observaciones_prioridad }}</td>
                     </tr>

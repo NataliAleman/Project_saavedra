@@ -125,6 +125,15 @@ body {
     box-shadow: 0 4px 14px rgba(5, 122, 53, 0.38);
 }
 
+.btn-save-master:disabled {
+    background: #cbd5e1 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    opacity: 0.75;
+}
+
 .master-mode-selector {
     display: flex;
     justify-content: center;
@@ -344,4 +353,14 @@ body {
     .classes-table-container {
         overflow-x: auto;
     }
+}
+
+/* ── Filtro de fondo oscuro fluido para modales (estilo .filter-opacity sin blur) ── */
+.swal2-container,
+.swal2-container.swal2-backdrop-show,
+.gis-modal-backdrop,
+.modal-backdrop {
+    background: rgba(0, 10, 25, 0.85) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
 }

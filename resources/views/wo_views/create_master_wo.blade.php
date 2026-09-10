@@ -98,7 +98,12 @@
                 <select name="workOrderSelect" id="workOrderSelect" required>
                     <option value="" disabled {{ !$selectedOtId ? 'selected' : '' }}>-- Seleccione una Orden de Trabajo --</option>
                     @foreach($workOrdersAll as $wo)
-                        <option value="{{ $wo->id }}" {{ $selectedOtId == $wo->id ? 'selected' : '' }}>
+                        @php
+                            $hasInfo = !empty($wo->fecha_compra) && !empty($wo->orden_compra) && !empty($wo->cliente) && !empty($wo->fecha_entrega_cliente) && ($wo->clases && $wo->clases->count() > 0);
+                            $bgColor = $hasInfo ? '#d1e7dd' : '#fff9c4';
+                            $textColor = $hasInfo ? '#0f5132' : '#664d03';
+                        @endphp
+                        <option value="{{ $wo->id }}" {{ $selectedOtId == $wo->id ? 'selected' : '' }} style="background-color: {{ $bgColor }}; color: {{ $textColor }}; font-weight: 500;">
                             OT {{ $wo->id }} - {{ $wo->cliente ?? 'Sin Cliente' }} ({{ $wo->moldura->nombre ?? 'Sin Moldura' }})
                         </option>
                     @endforeach

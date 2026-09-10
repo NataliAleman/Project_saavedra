@@ -61,7 +61,7 @@ class WOController extends Controller
                 ->whereColumn('orden_trabajo.id_moldura', '=', 'molduras.id')
                 ->where('clases.finalizada', '=', 2, 'and');
         }, 'and')->get();
-        $workOrdersAll = Orden_trabajo::query()->with(['clases', 'moldura'])->get();
+        $workOrdersAll = Orden_trabajo::query()->with(['clases.procesos', 'moldura'])->orderByRaw('CAST(id AS UNSIGNED) ASC')->orderBy('id', 'ASC')->get();
         $workOrders = null;
 
         $isAlmacen = auth()->user()->perfil == 5 || request('almacen_only') == 1;
@@ -79,9 +79,82 @@ class WOController extends Controller
                     if ($clases->count() == 0)
                         continue;
                 }
+
+                // Evaluar si la OT en programación está completa (tamaño, tipo_soldadura si aplica, fecha_inicio, hora_inicio y procesos si los requiere)
+                $isProgrammingComplete = true;
+                if ($clases->count() == 0) {
+                    $isProgrammingComplete = false;
+                } else {
+                    foreach ($clases as $cl) {
+                        if (empty($cl->tamanio) || empty($cl->fecha_inicio) || empty($cl->hora_inicio)) {
+                            $isProgrammingComplete = false;
+                            break;
+                        }
+
+                        // Verificar tipo de soldadura si la clase admite soldadura
+                        $clLower = strtolower($cl->nombre ?? '');
+                        $isWeldingClass = false;
+                        foreach (['molde', 'fondo', 'bombillo', 'obturador', 'corona'] as $wCl) {
+                            if (str_contains($clLower, $wCl)) {
+                                $isWeldingClass = true;
+                                break;
+                            }
+                        }
+                        if ($isWeldingClass && (is_null($cl->tipo_soldadura) || $cl->tipo_soldadura === '')) {
+                            $isProgrammingComplete = false;
+                            break;
+                        }
+
+                        // Verificar procesos únicamente si la clase los requiere
+                        if (Clase::normalizeClassName($cl->nombre) !== '') {
+                            if (!$cl->procesos) {
+                                $isProgrammingComplete = false;
+                                break;
+                            }
+                            $p = $cl->procesos;
+                            $procCols = [
+                                'cepillado',
+                                'desbaste_exterior',
+                                'revision_laterales',
+                                'pOperacion',
+                                'barreno_maniobra',
+                                'sOperacion',
+                                'soldadura',
+                                'soldaduraPTA',
+                                'rectificado',
+                                'asentado',
+                                'calificado',
+                                'acabadoBombillo',
+                                'acabadoMolde',
+                                'barreno_profundidad',
+                                'cavidades',
+                                'copiado',
+                                'offSet',
+                                'palomas',
+                                'rebajes',
+                                'grabado',
+                                'operacionEquipo',
+                                'embudoCM'
+                            ];
+                            $hasAnyProc = false;
+                            foreach ($procCols as $col) {
+                                if (isset($p->$col) && (int) $p->$col > 0) {
+                                    $hasAnyProc = true;
+                                    break;
+                                }
+                            }
+                            if (!$hasAnyProc) {
+                                $isProgrammingComplete = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // Moldura ya cargada con eager loading (0 queries)
                 $workOrders[$counter]['workOrder'] = $workOrder->id;
                 $workOrders[$counter]['molding'] = $workOrder->moldura ? $workOrder->moldura->nombre : '?';
+                $workOrders[$counter]['has_processes'] = $isProgrammingComplete;
                 $counter++;
             }
         }
@@ -127,7 +200,7 @@ class WOController extends Controller
     public function createMasterWO()
     {
         $moldings = Moldura::all();
-        $workOrdersAll = Orden_trabajo::with(['clases', 'moldura'])->orderByDesc('created_at')->get();
+        $workOrdersAll = Orden_trabajo::with(['clases', 'moldura'])->orderByRaw('CAST(id AS UNSIGNED) ASC')->orderBy('id', 'ASC')->get();
         return view('wo_views.create_master_wo', compact('moldings', 'workOrdersAll'));
     }
 
@@ -438,9 +511,11 @@ class WOController extends Controller
 
         // Ordenar estrictamente las semanas de menor a mayor (ascendente)
         uksort($groupedWOs, function ($a, $b) {
-            if ($a === 'Sin Semana') return 1;
-            if ($b === 'Sin Semana') return -1;
-            return (int)$a - (int)$b;
+            if ($a === 'Sin Semana')
+                return 1;
+            if ($b === 'Sin Semana')
+                return -1;
+            return (int) $a - (int) $b;
         });
 
         // Obtener lista de OTs para el select con sus molduras
@@ -510,9 +585,11 @@ class WOController extends Controller
 
         // Ordenar estrictamente las semanas de menor a mayor (ascendente)
         uksort($groupedWOs, function ($a, $b) {
-            if ($a === 'Sin Semana') return 1;
-            if ($b === 'Sin Semana') return -1;
-            return (int)$a - (int)$b;
+            if ($a === 'Sin Semana')
+                return 1;
+            if ($b === 'Sin Semana')
+                return -1;
+            return (int) $a - (int) $b;
         });
 
         $pdf = FacadePdf::loadView('wo_views.priorities_pdf_export', compact('groupedWOs', 'startWeek', 'endWeek'));
@@ -530,6 +607,7 @@ class WOController extends Controller
     {
         $request->validate([
             'ot_id' => 'required|exists:orden_trabajo,id',
+            'clase_id' => 'nullable|exists:clases,id',
             'field' => 'required|string',
             'value' => 'nullable|string'
         ]);
@@ -556,6 +634,49 @@ class WOController extends Controller
                 $value = \Carbon\Carbon::parse($cleanValue)->format('Y-m-d');
             } catch (\Exception $e) {
                 return response()->json(['success' => false, 'message' => 'Formato de fecha inválido.'], 400);
+            }
+        }
+
+        if ($request->boolean('apply_to_all') || $request->input('apply_to_all') == '1') {
+            $wo = Orden_trabajo::find($request->ot_id);
+            if ($wo) {
+                if (in_array($request->field, ['fecha_entrega_fundicion', 'entrega_tecamac', 'fecha_real'])) {
+                    $wo->{$request->field} = $value;
+                    $wo->save();
+                    Clase::where('id_ot', $wo->id)->update([$request->field => $value]);
+                    return response()->json(['success' => true]);
+                }
+            }
+        }
+
+        if ($request->has('batch_dates') && is_array($request->batch_dates)) {
+            $field = $request->field;
+            if (in_array($field, ['fecha_entrega_fundicion', 'entrega_tecamac', 'fecha_real'])) {
+                foreach ($request->batch_dates as $item) {
+                    if (isset($item['clase_id'])) {
+                        $val = !empty($item['fecha']) ? str_replace('/', '-', $item['fecha']) : null;
+                        if ($val) {
+                            try {
+                                $val = \Carbon\Carbon::parse($val)->format('Y-m-d');
+                            } catch (\Exception $e) {
+                                $val = null;
+                            }
+                        }
+                        Clase::where('id', $item['clase_id'])->update([$field => $val]);
+                    }
+                }
+                return response()->json(['success' => true]);
+            }
+        }
+
+        if ($request->filled('clase_id')) {
+            $clase = Clase::find($request->clase_id);
+            if ($clase) {
+                if (in_array($request->field, ['fecha_entrega_fundicion', 'entrega_tecamac', 'fecha_real'])) {
+                    $clase->{$request->field} = $value;
+                    $clase->save();
+                    return response()->json(['success' => true]);
+                }
             }
         }
 
@@ -601,7 +722,8 @@ class WOController extends Controller
         }
 
         // Vista de Programación de O.T. (Admin / Perfil 1): procesos, fechas, máquinas.
-        return view('wo_views.show_wo_programacion', compact('workOrder', 'molding', 'classes', 'processes'));
+        $allWorkOrders = Orden_trabajo::with(['moldura', 'clases.procesos'])->orderByRaw('CAST(id AS UNSIGNED) ASC')->get();
+        return view('wo_views.show_wo_programacion', compact('workOrder', 'molding', 'classes', 'processes', 'allWorkOrders'));
     }
 
     public function destroy(string $idWOrder)
@@ -687,15 +809,15 @@ class WOController extends Controller
                 }
             }
         }
-        
+
         // Seleccionar plantilla de PDF según la vista de origen:
         //  ?type=admin   → show_wo_programacion (ficha técnica con procesos y fechas)
         //  ?type=master  → show_wo_master (resumen tabular de clases)
         //  (sin tipo)    → pdf_wo por defecto
         $type = request()->query('type', 'master');
-        $viewName = match($type) {
-            'admin'  => 'wo_views.pdf_admin_wo',
-            default  => 'wo_views.pdf_wo',
+        $viewName = match ($type) {
+            'admin' => 'wo_views.pdf_admin_wo',
+            default => 'wo_views.pdf_wo',
         };
 
         $pdf = FacadePdf::loadView($viewName, compact('workOrder', 'molding', 'classes', 'processes'));
@@ -1414,19 +1536,21 @@ class WOController extends Controller
 
         // Ordenar semanas de menor a mayor (ascendente)
         uksort($groupedWOs, function ($a, $b) {
-            if ($a === 'Sin Semana') return 1;
-            if ($b === 'Sin Semana') return -1;
-            return (int)$a - (int)$b;
+            if ($a === 'Sin Semana')
+                return 1;
+            if ($b === 'Sin Semana')
+                return -1;
+            return (int) $a - (int) $b;
         });
 
         // Aplanar ordenando OTs dentro de cada semana por prioridad
         $flatOrderedWorkOrders = collect();
         foreach ($groupedWOs as $semana => $wos) {
             $sortedWeekWOs = collect($wos)->sort(function ($a, $b) {
-                $pA = ($a->prioridad === null || $a->prioridad == 0) ? 999999 : (int)$a->prioridad;
-                $pB = ($b->prioridad === null || $b->prioridad == 0) ? 999999 : (int)$b->prioridad;
+                $pA = ($a->prioridad === null || $a->prioridad == 0) ? 999999 : (int) $a->prioridad;
+                $pB = ($b->prioridad === null || $b->prioridad == 0) ? 999999 : (int) $b->prioridad;
                 if ($pA === $pB) {
-                    return strcmp((string)$a->id, (string)$b->id);
+                    return strcmp((string) $a->id, (string) $b->id);
                 }
                 return $pA <=> $pB;
             });

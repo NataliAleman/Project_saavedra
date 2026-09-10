@@ -20,6 +20,9 @@ class Clase extends Model
         'piezas',
         'pedido',
         'finalizada',
+        'fecha_entrega_fundicion',
+        'entrega_tecamac',
+        'fecha_real',
     ];
     public $timestamps = false;
 

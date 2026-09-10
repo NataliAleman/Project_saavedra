@@ -211,6 +211,16 @@ body {
     backdrop-filter: none !important;
     z-index: 99999 !important;
 }
+
+/* Modales globales (SweetAlert2 y overlays): filtro de fondo sin blur */
+.swal2-container,
+.swal2-container.swal2-backdrop-show,
+.gis-modal-backdrop,
+.modal-backdrop {
+    background: rgba(0, 10, 25, 0.85) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
 .loading {
     position: fixed !important;
     top: 50% !important;
