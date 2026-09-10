@@ -2,7 +2,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const profile = urlParams.get('almacen_only') === '1' ? 5 : document.getElementById("wo-profile").value;
 createButtonsAdd_Select();
 
-//Funcion para crear los botones de "Crear OT" y "Seleccionar OT"
 function createButtonsAdd_Select() {
     let div_bttns = document.querySelector(".div-bttns");
     let fragment = document.createDocumentFragment(); //Crear un fragmento de documento vacio
@@ -12,25 +11,28 @@ function createButtonsAdd_Select() {
     };
 
     for (let name in bttnText) {
-        if (!((profile == 5 || profile == 1 || profile == 3) && name == "add")) {
-            let bttn = document.createElement("button");
-            bttn.id = `bttn-${name}`;
-            bttn.className = "bttns-add-select";
-            bttn.textContent = bttnText[name];
-
-            //Agregar eventos a los botones
-            bttn.addEventListener("click", function () {
-                event.preventDefault();
-                let form = document.querySelector(".form");
-                if (form.childElementCount > 0) {
-                    form.removeChild(form.lastChild);
-                }
-                form.appendChild(
-                    createDiv(name, window.workOrders, window.moldings)
-                );
-            });
-            fragment.appendChild(bttn);
+        // Si es Admin, Master o Almacén, ocultamos los botones ya que se auto-carga la selección y no pueden crear.
+        if (profile == 1 || profile == 3 || profile == 5) {
+            continue;
         }
+
+        let bttn = document.createElement("button");
+        bttn.id = `bttn-${name}`;
+        bttn.className = "bttns-add-select";
+        bttn.textContent = bttnText[name];
+
+        //Agregar eventos a los botones
+        bttn.addEventListener("click", function (event) {
+            event.preventDefault();
+            let form = document.querySelector(".form");
+            if (form.childElementCount > 0) {
+                form.removeChild(form.lastChild);
+            }
+            form.appendChild(
+                createDiv(name, window.workOrders, window.moldings)
+            );
+        });
+        fragment.appendChild(bttn);
     }
     div_bttns.appendChild(fragment);
 

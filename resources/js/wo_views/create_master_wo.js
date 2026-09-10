@@ -45,10 +45,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Manejar selección de OT en modo Modificar
     const woSelect = document.getElementById("workOrderSelect");
     const btnSaveModify = document.getElementById("btn-save-modify");
+    const saveModContainer = document.getElementById("save_modifications_container");
+    const btnPdfModify = document.getElementById("btn-pdf-modify");
+    const btnAddNewClass = document.getElementById("btn-add-new-class");
+    const btnCancelNewClass = document.getElementById("btn-cancel-new-class");
     let initialValues = null;
 
     function checkChanges() {
-        if (!btnSaveModify || !initialValues) return;
+        if (!initialValues) return;
         let hasChanged = false;
 
         const fields = {
@@ -70,22 +74,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        const MATERIAL_OPTIONS = [
-            "HG - SS10", "HG - SS10CR", "HG - SS20", "HG - 50V", "HG - DUCTIL 654512",
-            "SSMF - MINOX", "DAMERON", "DAMERON - SSMF", "1018", "4140",
-            "INOX 304", "INOX 316", "INOX 416", "ALUMINIO"
-        ];
-
-        const FOUNDRY_PROVIDERS = [
-            "SS Metal Foundry, S. de R. L. de C. V.",
-            "SOCIEDAD COOPERATIVA DE PRODUCCIÓN JACARANDAS",
-            "EXTERNO"
-        ];
-
         if (!hasChanged && initialValues.class_orders) {
             for (let clId in initialValues.class_orders) {
                 const classInput = document.querySelector(`input[name="class_orders[${clId}]"]`);
-                if (classInput && !classInput.disabled) { // Si está deshabilitado es porque se eliminó
+                if (classInput && !classInput.disabled) {
                     const currentQty = String(classInput.value).trim();
                     const initQty = String(initialValues.class_orders[clId]).trim();
                     if (currentQty !== initQty) {
@@ -124,25 +116,36 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Si hay filas nuevas de clases agregadas manualmente, también habilitamos el botón
-        if (!hasChanged) {
-            const newClassRows = document.querySelectorAll("select[name^='new_classes']");
-            if (newClassRows.length > 0) {
-                hasChanged = true;
-            }
+        // Si hay filas nuevas de clases agregadas manualmente, también consideramos modificaciones
+        const newClassRows = document.querySelectorAll("select[name^='new_classes']");
+        if (!hasChanged && newClassRows.length > 0) {
+            hasChanged = true;
         }
-        
-        // Si hay clases que se van a eliminar, también habilitamos
-        if (!hasChanged) {
-            const deletedClasses = document.querySelectorAll("input[name='deleted_classes[]']");
-            if (deletedClasses.length > 0) {
-                hasChanged = true;
+
+        // Cambiar dinámicamente el texto del botón según si es clase nueva o modificación
+        if (btnSaveModify) {
+            if (newClassRows.length > 0) {
+                btnSaveModify.textContent = "Guardar Clase Nueva";
+            } else {
+                btnSaveModify.textContent = "Guardar Modificaciones de la Clase";
             }
         }
 
-        btnSaveModify.disabled = !hasChanged;
-        btnSaveModify.style.opacity = hasChanged ? "1" : "0.5";
-        btnSaveModify.style.cursor = hasChanged ? "pointer" : "not-allowed";
+        // Controlar visibilidad del contenedor del botón Guardar Modificaciones
+        if (saveModContainer) {
+            saveModContainer.style.display = hasChanged ? "flex" : "none";
+        }
+
+        // Bloquear o desbloquear Generar PDF y Agregar Clase si hay cambios no guardados
+        if (btnAddNewClass) {
+            btnAddNewClass.disabled = hasChanged;
+            btnAddNewClass.style.pointerEvents = hasChanged ? "none" : "auto";
+            btnAddNewClass.style.opacity = hasChanged ? "0.5" : "1";
+        }
+        if (btnPdfModify) {
+            btnPdfModify.style.pointerEvents = hasChanged ? "none" : "auto";
+            btnPdfModify.style.opacity = hasChanged ? "0.5" : "1";
+        }
     }
 
     const CLASS_OPTIONS = [
@@ -248,6 +251,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const wo = window.workOrdersData.find(w => w.id == woId);
             if (wo) {
+                const actionsContainer = document.getElementById("actions_container");
+                if (actionsContainer) actionsContainer.style.display = "flex";
+
+                const pdfBtn = document.getElementById("btn-pdf-modify");
+                if (pdfBtn) {
+                    pdfBtn.href = `/generatePDFWO/${wo.id}?type=master`;
+                    if (wo.clases && wo.clases.length > 0) {
+                        pdfBtn.style.display = "inline-flex";
+                    } else {
+                        pdfBtn.style.display = "none";
+                    }
+                }
+
+                // Resetear botón de Agregar Nueva Clase si estaba oculto
+                if (btnAddNewClass) {
+                    btnAddNewClass.style.display = "inline-flex";
+                    btnAddNewClass.disabled = false;
+                    btnAddNewClass.style.pointerEvents = "auto";
+                    btnAddNewClass.style.opacity = "1";
+                }
+                if (btnCancelNewClass) btnCancelNewClass.style.display = "none";
+                if (saveModContainer) saveModContainer.style.display = "none";
+
                 // Limpiar inputs ocultos de clases eliminadas de la OT anterior
                 document.querySelectorAll("input[name='deleted_classes[]']").forEach(el => el.remove());
                 
@@ -331,7 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     <input type="number" name="class_orders[${cl.id}]" value="${cl.pedido ?? 0}" min="0" required class="form-control class-qty-input">
                                 </td>
                                 <td>
-                                    <button type="button" class="btn-remove-existing-class" data-class-id="${cl.id}" style="background: #dc3545; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;">Eliminar</button>
+                                    <button type="button" class="btn-remove-existing-class btn-action-delete" data-class-id="${cl.id}">Eliminar</button>
                                 </td>
                             `;
                             tbody.appendChild(tr);
@@ -339,32 +365,33 @@ document.addEventListener("DOMContentLoaded", function () {
                             const btnRemoveExisting = tr.querySelector(".btn-remove-existing-class");
                             if (btnRemoveExisting) {
                                 btnRemoveExisting.addEventListener("click", function() {
-                                    if(confirm("¿Estás seguro de que deseas quitar esta clase? Se eliminará definitivamente al guardar los cambios.")) {
-                                        // Ocultar la fila
-                                        tr.style.display = "none";
-                                        // Deshabilitar inputs para que no se envíen
-                                        const qtyInput = tr.querySelector(".class-qty-input");
-                                        if (qtyInput) qtyInput.disabled = true;
-                                        const matSelect = tr.querySelector(".class-mat-select");
-                                        if (matSelect) matSelect.disabled = true;
-                                        const provSelect = tr.querySelector(".class-prov-select");
-                                        if (provSelect) provSelect.disabled = true;
-                                        
-                                        // Agregar input hidden para eliminar la clase
+                                    if (confirm("¿Estás seguro de que deseas eliminar esta clase de la Orden de Trabajo?")) {
                                         const hiddenDelete = document.createElement("input");
                                         hiddenDelete.type = "hidden";
                                         hiddenDelete.name = "deleted_classes[]";
                                         hiddenDelete.value = cl.id;
-                                        document.getElementById("form-update-master-wo").appendChild(hiddenDelete);
-                                        
-                                        checkChanges();
+                                        formUpdate.appendChild(hiddenDelete);
+                                        formUpdate.submit();
                                     }
                                 });
                             }
                         });
                     } else {
                         container.style.display = "block";
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Aún no se han registrado clases para esta Orden de Trabajo.</td></tr>`;
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="padding: 0; border: none;">
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; color: #94a3b8; text-align: center; gap: 10px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                    <span style="font-size: 0.88em; font-weight: 600;">Aún no hay clases registradas</span>
+                                    <span style="font-size: 0.78em;">Usa el botón <strong style="color:#057a35;">+ Agregar Clase</strong> para comenzar</span>
+                                </div>
+                            </td>
+                        </tr>`;
                     }
                 }
 
@@ -383,10 +410,64 @@ document.addEventListener("DOMContentLoaded", function () {
         };
 
         let newClassCounter = 0;
-        const btnAddNewClass = document.getElementById("btn-add-new-class");
+        
+        if (btnCancelNewClass) {
+            btnCancelNewClass.addEventListener("click", function() {
+                // Ocultar botón Cancelar y mostrar Agregar Clase
+                btnCancelNewClass.style.display = "none";
+                if (btnAddNewClass) {
+                    btnAddNewClass.style.display = "inline-flex";
+                    btnAddNewClass.disabled = false;
+                    btnAddNewClass.style.pointerEvents = "auto";
+                    btnAddNewClass.style.opacity = "1";
+                }
+                
+                // Remover todas las filas de "Nueva Clase" añadidas
+                const tbody = document.getElementById("mod_classes_tbody");
+                if (tbody) {
+                    const newRows = tbody.querySelectorAll("tr.new-class-row");
+                    newRows.forEach(row => row.remove());
+
+                    // Resetear el contador
+                    newClassCounter = 0;
+
+                    // Revisar si la tabla quedó vacía para volver a mostrar el mensaje de vacío
+                    if (tbody.querySelectorAll("tr").length === 0) {
+                        tbody.innerHTML = `
+                            <tr class="empty-row">
+                                <td colspan="5" style="padding: 0; border: none;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; color: #94a3b8; text-align: center; gap: 10px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                                        </svg>
+                                        <span style="font-size: 0.88em; font-weight: 600;">Aún no hay clases registradas</span>
+                                        <span style="font-size: 0.78em;">Usa el botón <strong style="color:#057a35;">+ Agregar Clase</strong> para comenzar</span>
+                                    </div>
+                                </td>
+                            </tr>`;
+                    }
+                }
+
+                // Volver a chequear si hay modificaciones reales
+                checkChanges();
+            });
+        }
+
         if (btnAddNewClass) {
             btnAddNewClass.addEventListener("click", function() {
+                btnAddNewClass.style.display = "none";
+                if (btnCancelNewClass) btnCancelNewClass.style.display = "inline-flex";
+                
                 const tbody = document.getElementById("mod_classes_tbody");
+                
+                // Si estaba el estado vacío, limpiarlo
+                const emptyRow = tbody.querySelector("td[colspan='5']");
+                if (emptyRow) {
+                    emptyRow.parentElement.remove();
+                }
+
                 let newMatOptionsHtml = `<option value="" disabled selected>Seleccione Material</option>`;
                 MATERIAL_OPTIONS.forEach(mat => {
                     newMatOptionsHtml += `<option value="${mat}">${mat}</option>`;
@@ -403,6 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
 
                 const tr = document.createElement("tr");
+                tr.className = "new-class-row";
                 tr.innerHTML = `
                     <td>
                         <select name="new_classes[${newClassCounter}][nombre]" required class="form-control" style="width: 100%;">
@@ -423,7 +505,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <input type="number" name="new_classes[${newClassCounter}][cantidad]" value="" min="1" required class="form-control class-qty-input">
                     </td>
                     <td>
-                        <button type="button" class="btn-remove-new-class" style="background: #dc3545; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer;">X</button>
+                        <span style="color: #94a3b8; font-size: 0.85em;">Nueva Clase</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -444,8 +526,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         
                         let duplicate = false;
                         
-                        // 1. Revisar en clases existentes (incluso si están "eliminadas" visualmente, aunque no deberían contar si las vas a eliminar)
-                        // Para prevenir problemas, revisamos las que están visibles
                         const existingNames = [];
                         document.querySelectorAll("#mod_classes_tbody tr:not([style*='display: none']) .existing-class-name").forEach(el => {
                             existingNames.push(el.textContent.trim());
@@ -454,12 +534,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (existingNames.includes(selectedVal)) {
                             duplicate = true;
                         } else {
-                            // 2. Revisar en otros selects de clases nuevas
                             let count = 0;
                             document.querySelectorAll("select[name^='new_classes']").forEach(sel => {
                                 if (sel.value === selectedVal) count++;
                             });
-                            if (count > 1) duplicate = true; // Si hay más de 1 es porque este mismo select lo seleccionó y ya existía en otro
+                            if (count > 1) duplicate = true;
                         }
                         
                         if (duplicate) {
@@ -470,14 +549,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
                 
-                // Remove button logic
-                tr.querySelector(".btn-remove-new-class").addEventListener("click", function() {
-                    tr.remove();
-                    checkChanges();
-                });
-                
                 newClassCounter++;
-                checkChanges(); // enable save button
+                checkChanges();
             });
         }
 

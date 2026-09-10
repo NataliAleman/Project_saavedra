@@ -60,7 +60,7 @@
             <!-- 4. Orden de Compra -->
             <div class="form-field">
                 <label for="orden_compra">4. Orden de Compra <span class="text-danger">*</span></label>
-                <input type="text" name="orden_compra" id="orden_compra" required placeholder="Ej. OC-9912" maxlength="25" pattern="[A-Za-z0-9-]{1,25}" value="{{ old('orden_compra') }}">
+                <input type="text" name="orden_compra" id="orden_compra" required placeholder="Ej. OC-9912" maxlength="25" pattern="[A-Za-z0-9\-]{1,25}" value="{{ old('orden_compra') }}">
             </div>
 
             <!-- 5. Cliente -->
@@ -118,7 +118,7 @@
 
             <div class="form-field">
                 <label for="mod_orden_compra">Orden de Compra <span class="text-danger">*</span></label>
-                <input type="text" name="orden_compra" id="mod_orden_compra" required maxlength="25" pattern="[A-Za-z0-9-]{1,25}">
+                <input type="text" name="orden_compra" id="mod_orden_compra" required maxlength="25" pattern="[A-Za-z0-9\-]{1,25}">
             </div>
 
             <div class="form-field">
@@ -137,7 +137,7 @@
             </div>
 
             <!-- Tabla de Clases y Cantidades de la OT -->
-            <div class="classes-table-container" id="mod_classes_container" style="display: none;">
+            <div class="classes-table-container" id="mod_classes_container" style="display: none; grid-column: 1 / -1;">
                 <h4>Clases registradas para esta O.T</h4>
                 <table class="classes-table">
                     <thead>
@@ -153,16 +153,32 @@
                         <!-- Llenado dinámico por JS -->
                     </tbody>
                 </table>
-                <div style="margin-top: 10px; text-align: right;">
-                    <button type="button" id="btn-add-new-class" style="padding: 5px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        + Agregar Clase
-                    </button>
+                <div class="btn-container" id="save_modifications_container" style="display: none; justify-content: center; margin-top: 20px; padding-bottom: 10px;">
+                    <button type="submit" class="btn-save-master" id="btn-save-modify">Guardar Modificaciones de la Clase</button>
                 </div>
             </div>
+        </div>
 
-            <div class="btn-container">
-                <button type="submit" class="btn-save-master" id="btn-save-modify" disabled style="opacity: 0.5; cursor: not-allowed;">Guardar Modificaciones</button>
-            </div>
+        <!-- Botones de Acción (Generar PDF / Agregar Clase) en un contenedor aparte fuera de la grilla, centrados debajo de la tabla -->
+        <div class="container-WOButtons" id="actions_container" style="display: none; justify-content: center; align-items: center; gap: 20px; margin-top: 25px; margin-bottom: 15px;">
+            <a href="#" class="btn-pdf-master" id="btn-pdf-modify" style="display: none; text-decoration: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>Generar PDF
+            </a>
+            <button type="button" id="btn-add-new-class">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg> Agregar Clase
+            </button>
+            <button type="button" id="btn-cancel-new-class" class="btn-action-delete" style="display: none;">
+                Cancelar
+            </button>
         </div>
     </form>
 </div>

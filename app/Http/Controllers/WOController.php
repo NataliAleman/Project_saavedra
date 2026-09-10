@@ -517,7 +517,7 @@ class WOController extends Controller
 
         $pdf = FacadePdf::loadView('wo_views.priorities_pdf_export', compact('groupedWOs', 'startWeek', 'endWeek'));
 
-        $pdf->getDomPDF()->set_option('isPhpEnabled', true);
+        $pdf->setOption(['isPhpEnabled' => true]);
         $pdf->setPaper('letter', 'landscape');
 
         return $pdf->download('Prioridades_GIS.pdf');
@@ -592,9 +592,16 @@ class WOController extends Controller
             return view('wo_views.show_wo_almacen', compact('workOrder', 'molding', 'classes', 'remisiones', 'parcialidades', 'tratamientos'));
         }
 
-        //Se obtienen las maquinas de los procesos guardados
+        //Se obtienen los procesos guardados
         $processes = $this->classController->getClassProcesses($classes);
-        return view('wo_views.show_wo', compact('workOrder', 'molding', 'classes', 'processes'));
+
+        // Vista Master (Gestión de Clases): solo clase, cantidad, material, proveedor.
+        if (request()->filled('from_master')) {
+            return view('wo_views.show_wo_master', compact('workOrder', 'molding', 'classes'));
+        }
+
+        // Vista de Programación de O.T. (Admin / Perfil 1): procesos, fechas, máquinas.
+        return view('wo_views.show_wo_programacion', compact('workOrder', 'molding', 'classes', 'processes'));
     }
 
     public function destroy(string $idWOrder)
@@ -680,7 +687,18 @@ class WOController extends Controller
                 }
             }
         }
-        $pdf = FacadePdf::loadView('wo_views.pdf_wo', compact('workOrder', 'molding', 'classes', 'processes'));
+        
+        // Seleccionar plantilla de PDF según la vista de origen:
+        //  ?type=admin   → show_wo_programacion (ficha técnica con procesos y fechas)
+        //  ?type=master  → show_wo_master (resumen tabular de clases)
+        //  (sin tipo)    → pdf_wo por defecto
+        $type = request()->query('type', 'master');
+        $viewName = match($type) {
+            'admin'  => 'wo_views.pdf_admin_wo',
+            default  => 'wo_views.pdf_wo',
+        };
+
+        $pdf = FacadePdf::loadView($viewName, compact('workOrder', 'molding', 'classes', 'processes'));
         $pdf->setPaper('letter', 'landscape');
         return $pdf->download('Orden_de_trabajo_' . $workOrder->id . '.pdf');
     }

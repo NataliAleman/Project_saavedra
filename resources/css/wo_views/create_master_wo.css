@@ -8,17 +8,17 @@ body {
 }
 
 .wrapper-master {
-    width: 98%;
-    max-width: 1750px;
-    margin: 1.5rem auto;
-    padding: 2rem 2.5rem;
-    background: rgba(255, 255, 255, 0.94);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    width: 96vw;
+    max-width: 1800px;
+    margin: 15px auto;
+    padding: 1.4em 2.5em;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
     transition: all 0.3s ease;
+    max-height: calc(100vh - 85px);
+    overflow-y: auto;
 }
 
 .header-master {
@@ -78,22 +78,22 @@ body {
 
 .form-field input,
 .form-field select {
+    border-radius: 5px;
+    border: 1px solid #00000033;
+    font-size: 0.88em;
+    padding: 0.5em 0.65em;
+    background: #03396610;
     width: 100%;
-    border-radius: 8px;
-    padding: 0.65em 1em;
-    background: rgba(3, 57, 102, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    font-size: 1em;
-    font-family: 'Poppins', sans-serif;
-    transition: all 0.2s ease-in-out;
+    font-family: inherit;
+    transition: 0.2s;
+    box-sizing: border-box;
 }
 
 .form-field input:focus,
 .form-field select:focus {
     outline: none;
-    border-color: var(--gis-blue);
-    background: var(--gis-white);
-    box-shadow: 0 0 0 3px var(--shadow-blue);
+    border: 1px solid #0a8504;
+    box-shadow: none;
 }
 
 .btn-container {
@@ -103,23 +103,26 @@ body {
 }
 
 .btn-save-master {
-    padding: 0.85em 3em;
-    font-size: 1.05em;
-    font-weight: 600;
+    padding: 8px 18px;
+    font-size: 0.85em;
+    font-weight: 700;
     color: #fff;
     border: none;
-    border-radius: 50px;
-    background: linear-gradient(135deg, var(--gis-blue), #055ba3);
+    border-radius: 6px;
+    background: linear-gradient(135deg, #057a35 0%, #07a348 100%);
     cursor: pointer;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px var(--shadow-blue);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(5, 122, 53, 0.28);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-save-master:hover {
-    background: linear-gradient(135deg, #044b87, #0672cc);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px var(--shadow-blue);
+    background: linear-gradient(135deg, #045e29 0%, #068d3d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(5, 122, 53, 0.38);
 }
 
 .master-mode-selector {
@@ -130,15 +133,41 @@ body {
 }
 
 .btn-mode {
-    padding: 0.65em 1.8em;
-    font-size: 0.95em;
-    font-weight: 600;
-    border-radius: 30px;
-    border: 2px solid var(--gis-blue);
+    padding: 8px 18px;
+    font-size: 0.85em;
+    font-weight: 700;
+    border-radius: 6px;
+    border: 1px solid var(--gis-blue);
     background: transparent;
     color: var(--gis-blue);
     cursor: pointer;
     transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pdf-master {
+    background: linear-gradient(135deg, #033966 0%, #0561ab 100%);
+    box-shadow: 0 2px 8px rgba(3, 57, 102, 0.28);
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pdf-master:hover {
+    background: linear-gradient(135deg, #022b4d 0%, #044d8e 100%);
+    box-shadow: 0 4px 14px rgba(3, 57, 102, 0.38);
+    transform: translateY(-1px);
+    color: #ffffff;
 }
 
 .btn-mode.active,
@@ -150,53 +179,158 @@ body {
 .classes-table-container {
     grid-column: 1 / -1;
     margin-top: 1.5rem;
-    background: #fff;
-    padding: 1.2rem;
+    background: #ffffff;
+    padding: 0; 
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(3, 57, 102, 0.09);
+    overflow: hidden;
+    border: 1px solid rgba(3, 57, 102, 0.12);
 }
 
 .classes-table-container h4 {
     color: var(--gis-blue);
-    margin-bottom: 0.8rem;
+    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+    margin-bottom: 0;
+    font-size: 1.15em;
 }
 
 .classes-table {
     width: 100%;
     border-collapse: collapse;
+    color: #1e293b;
+    text-align: center;
+    background: #ffffff;
+    margin-top: 0.5rem;
 }
 
 .classes-table th {
-    background: var(--gis-blue);
-    color: #fff;
-    padding: 0.6em 1em;
-    font-size: 0.9em;
-    text-align: left;
+    background: linear-gradient(135deg, #033966 0%, #0561ab 100%);
+    color: #ffffff;
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 8px;
+    border: none;
+    white-space: nowrap;
+    text-align: center;
 }
 
 .classes-table td {
-    padding: 0.6em 1em;
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
+    padding: 9px 6px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.95em;
+    text-align: center;
+    border-right: 1px solid rgba(3, 57, 102, 0.07);
+    border-bottom: 1px solid rgba(3, 57, 102, 0.08);
+    vertical-align: middle;
+}
+
+.classes-table td:last-child {
+    border-right: none;
+}
+
+.classes-table tbody tr {
+    background: #ffffff;
+    transition: background 0.18s ease;
+}
+
+.classes-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.classes-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(3, 57, 102, 0.06) 0%, rgba(5, 97, 171, 0.08) 100%);
+}
+
+.classes-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .classes-table input[type="number"],
 .classes-table input[type="text"],
 .classes-table select {
-    padding: 0.4em 0.8em;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 0.9em;
-    font-family: 'Poppins', sans-serif;
+    padding: 0.5em 0.65em;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: rgba(3, 57, 102, 0.06);
+    font-size: 0.88em;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    color: #1e293b;
+}
+
+.classes-table input[type="number"]:focus,
+.classes-table input[type="text"]:focus,
+.classes-table select:focus {
+    outline: none;
+    border: 1px solid #0a8504;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.classes-table input[type="number"]:disabled,
+.classes-table input[type="text"]:disabled,
+.classes-table select:disabled {
+    background-color: rgba(3, 57, 102, 0.04) !important;
+    color: var(--gis-blue);
+    border: 1px solid rgba(3, 57, 102, 0.17) !important;
+    cursor: not-allowed;
+    opacity: 1;
 }
 
 .classes-table input[type="number"] {
-    width: 110px;
+    width: 120px;
 }
 
 .classes-table input[type="text"] {
     width: 100%;
     min-width: 120px;
+}
+
+.btn-action-delete {
+    background: linear-gradient(135deg, #990000 0%, #cc0000 100%);
+    color: #ffffff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 700;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(153, 0, 0, 0.28);
+}
+
+.btn-action-delete:hover {
+    background: linear-gradient(135deg, #7a0000 0%, #b30000 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(153, 0, 0, 0.38);
+    transform: translateY(-1px);
+}
+
+#btn-add-new-class {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #057a35 0%, #07a348 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 700;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(5, 122, 53, 0.28);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#btn-add-new-class:hover {
+    background: linear-gradient(135deg, #045e29 0%, #068d3d 100%);
+    box-shadow: 0 4px 14px rgba(5, 122, 53, 0.38);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
@@ -206,5 +340,8 @@ body {
     .wrapper-master {
         padding: 1.5rem 1.2rem;
         margin: 1.5rem 1rem;
+    }
+    .classes-table-container {
+        overflow-x: auto;
     }
 }

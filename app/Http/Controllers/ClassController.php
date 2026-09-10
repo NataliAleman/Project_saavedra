@@ -141,7 +141,7 @@ class ClassController extends Controller
         ]);
 
         $redirectParams = ['workOrder' => $request->input('workOrder')];
-        if ($request->filled('from_master') || auth()->user()->perfil == 3) {
+        if ($request->filled('from_master')) {
             $redirectParams['from_master'] = 1;
         }
 
@@ -157,7 +157,23 @@ class ClassController extends Controller
         $class = Clase::query()->find($idClass, ['*']);
         $workOrder = Orden_trabajo::query()->find($class->id_ot, ['*']);
 
+        $nameChanged = false;
         if (!in_array(auth()->user()->perfil, [5]) && $request->input('from_almacen') != 1) {
+            if ($request->has('class')) {
+                // Verificar si la nueva clase ya existe en la misma OT, para no tener duplicados
+                if ($class->nombre !== $request->input('class')) {
+                    $foundClass = Clase::query()
+                        ->where('id_ot', '=', $workOrder->id)
+                        ->where('nombre', '=', $request->input('class'))
+                        ->first();
+                    if ($foundClass) {
+                        return redirect()->back()->with('error', '¡El tipo de clase que intentas asignar ya existe en la orden de trabajo!');
+                    }
+                    $class->nombre = $request->input('class');
+                    $nameChanged = true;
+                }
+            }
+
             $class->pedido = $request->input('order') ?? $class->pedido;
             $class->piezas = $request->input('pieces') ?? $request->input('order') ?? $class->piezas;
             $class->material = $request->input('material') ?? $class->material;
@@ -207,11 +223,13 @@ class ClassController extends Controller
         }
 
         //Actualizar los procesos de la clase
-        $process = Procesos::query()->where('id_clase', '=', $class->id, 'and')->first();
-        if (!$process) {
-            $process = new Procesos();
+        if (!$request->has('partial_edit') || $nameChanged) {
+            $process = Procesos::query()->where('id_clase', '=', $class->id, 'and')->first();
+            if (!$process) {
+                $process = new Procesos();
+            }
+            $this->storeProcess($class, $request->input('operations'), $request->input('machines'), $process); //Verifico las casillas.
         }
-        $this->storeProcess($class, $request->input('operations'), $request->input('machines'), $process); //Verifico las casillas.
         
         SystemLog::create([
             'user_matricula' => auth()->user()->matricula,
@@ -228,7 +246,7 @@ class ClassController extends Controller
         }
 
         $redirectParams = ['workOrder' => $request->input('workOrder')];
-        if ($request->filled('from_master') || auth()->user()->perfil == 3) {
+        if ($request->filled('from_master')) {
             $redirectParams['from_master'] = 1;
         }
 
@@ -275,7 +293,7 @@ class ClassController extends Controller
         }
         if ($workOrderParam == null) {
             $redirectParams = ['workOrder' => $workOrder->id];
-            if (request('from_master') == 1 || auth()->user()->perfil == 3) {
+            if (request('from_master') == 1) {
                 $redirectParams['from_master'] = 1;
             }
             return redirect()->route('showWO', $redirectParams)->with($param, $text); //Redirecciono a la vista de registro de la OT

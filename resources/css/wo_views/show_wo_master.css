@@ -1,0 +1,6 @@
+/* show_wo_master.css — Estilos para la vista Master de gestión de clases */
+/* Importa la paleta GIS y los estilos base de show_wo */
+@import "../global.css";
+
+/* Reutilizamos todos los estilos de show_wo base */
+@import "./show_wo.css";

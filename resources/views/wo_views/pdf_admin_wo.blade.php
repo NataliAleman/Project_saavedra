@@ -147,6 +147,51 @@
             padding: 4px 6px !important;
         }
 
+        .class-container {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+
+        .class-header {
+            background-color: #033966;
+            color: white;
+            font-size: 11px;
+            padding: 4px 8px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #cbd5e1;
+            border-top: none;
+        }
+
+        .details-table td {
+            padding: 4px 6px;
+            font-size: 9px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+        }
+
+        .detail-label {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            color: #033966;
+            width: 12%;
+        }
+
+        .detail-value {
+            color: #0f172a;
+            width: 21%;
+        }
+        
+        .processes-box {
+            font-size: 8.5px;
+            line-height: 1.3;
+        }
+
         .no-records {
             padding: 20px;
             color: #94a3b8;
@@ -182,7 +227,7 @@
         <tr>
             <td style="vertical-align: top;">
                 <h1 class="header-title">GRUPO INDUSTRIAL SAAVEDRA</h1>
-                <p class="header-subtitle">Ficha Técnica de Producción — Orden de Trabajo #{{ $workOrder->id }}</p>
+                <p class="header-subtitle">Programación de Orden de Trabajo #{{ $workOrder->id }}</p>
             </td>
             <td class="header-date">
                 <strong>Fecha de Emisión:</strong> {{ now()->format('d/m/Y H:i') }}<br>
@@ -203,46 +248,63 @@
             <td class="info-value">
                 {{ $workOrder->created_at ? \Carbon\Carbon::parse($workOrder->created_at)->format('d/m/Y H:i') : '-' }}
             </td>
-            <td class="info-label">Clases</td>
-            <td class="info-value">{{ $nombresClases }}</td>
+            <td class="info-label">Total Clases</td>
+            <td class="info-value">{{ $classes ? count($classes) : '0' }}</td>
         </tr>
     </table>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 10%;">Número</th>
-                <th style="text-align: center; width: 30%;">Tipo de Clase</th>
-                <th style="width: 15%;">Cantidad</th>
-                <th style="width: 20%;">Material</th>
-                <th style="width: 25%;">Proveedor Fundición</th>
-            </tr>
-        </thead>
-        @if ($classes != null && count($classes) > 0)
-            <tbody>
-                @foreach($classes as $index => $class)
+    @if ($classes != null && count($classes) > 0)
+        @foreach($classes as $index => $class)
+            <div class="class-container">
+                <h3 class="class-header">{{ $index + 1 }}. {{ $class->nombre }}</h3>
+                <table class="details-table">
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td class="class-name">{{ $class->nombre }}</td>
-                        <td><strong>{{ $class->pedido }}</strong></td>
-                        <td class="material-val">{{ $class->material ?? '-' }}</td>
-                        <td style="font-size: 8.5px;">
-                            {{ (!empty($class->proveedor) && trim($class->proveedor) !== '') ? $class->proveedor : '-' }}</td>
+                        <td class="detail-label">Tamaño</td>
+                        <td class="detail-value"><strong>{{ $class->tamanio ?? '-' }}</strong></td>
+                        <td class="detail-label">Pedido Total</td>
+                        <td class="detail-value"><strong>{{ $class->pedido ?? '-' }}</strong></td>
+                        <td class="detail-label">Material</td>
+                        <td class="detail-value"><strong>{{ $class->material ?? '-' }}</strong></td>
                     </tr>
-                @endforeach
-            </tbody>
-        @else
-            <tbody>
-                <tr>
-                    <td colspan="5" class="no-records">No hay clases registradas en esta orden de trabajo.</td>
-                </tr>
-            </tbody>
-        @endif
-    </table>
+                    <tr>
+                        <td class="detail-label">Tipo Soldadura</td>
+                        <td class="detail-value"><strong>{{ $tiposSoldaduraMap[$class->tipo_soldadura] ?? ($class->tipo_soldadura ?: '-') }}</strong></td>
+                        <td class="detail-label">Pzas. Consignación</td>
+                        <td class="detail-value"><strong>{{ $class->piezas ?? '-' }}</strong></td>
+                        <td class="detail-label">Proveedor Fund.</td>
+                        <td class="detail-value"><strong>{{ (!empty($class->proveedor) && trim($class->proveedor) !== '') ? $class->proveedor : '-' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Fecha Inicio</td>
+                        <td class="detail-value">{{ $class->fecha_inicio ? \Carbon\Carbon::parse($class->fecha_inicio)->format('d/m/Y') : '-' }}</td>
+                        <td class="detail-label">Hora Inicio</td>
+                        <td class="detail-value">{{ $class->hora_inicio ? date("h:i a", strtotime($class->hora_inicio)) : '-' }}</td>
+                        <td class="detail-label">Fecha Término</td>
+                        <td class="detail-value">{{ $class->fecha_termino ? \Carbon\Carbon::parse($class->fecha_termino)->format('d/m/Y') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Hora Término</td>
+                        <td class="detail-value" colspan="5">{{ $class->hora_termino ? date("h:i a", strtotime($class->hora_termino)) : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Procesos<br>Asignados</td>
+                        <td class="detail-value processes-box" colspan="5">
+                            @if(!empty($processes[$class->id]))
+                                {{ $processes[$class->id] }}
+                            @else
+                                <span style="color: #94a3b8; font-style: italic;">Sin procesos asignados</span>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        @endforeach
+    @else
+        <div class="no-records">No hay clases registradas en esta orden de trabajo.</div>
+    @endif
 
     <div class="footer-note">
         Documento oficial de producción — Grupo Industrial Saavedra © {{ date('Y') }}
     </div>
 </body>
-
 </html>
