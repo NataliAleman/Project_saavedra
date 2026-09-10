@@ -92,6 +92,7 @@
         masterPriorities: @json(route('master.priorities')),
         show_panelWO: @json(route('show_panelWO')),
         users: @json(route('users')), // PENDING
+        usersOrganigrama: @json(route('users.organigrama')),
         createUser: @json(route('createUser')),
         recoverPassword: @json(route('recoverPassword')),
         cNominals: @json(route('cNominals')),

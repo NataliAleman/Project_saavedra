@@ -1,92 +1,167 @@
-﻿/* global.css: reset, Poppins, variables GIS */
+/* global.css: reset, Poppins, variables GIS */
 @import "../global.css";
-
 @import "../layouts/partials/messages.css";
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    /* font-family heredado de global.css */
 }
 
-/* Contenedor centrado */
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    padding: 40px 20px;
-    position: relative;
-    top: 50px;
-}
-
-/* Tarjeta del formulario compacta y elegante */
-.cascading-right {
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.92);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    width: 100%;
-    max-width: 520px;
+/* ── Contenedor Principal Amplio ──────────────────────────── */
+.create-user-container {
+    width: 94%;
+    max-width: 1350px;
+    margin: 100px auto 60px;
+    background: #ffffff;
     border-radius: 10px;
     border: 5px solid var(--gis-blue);
-    box-shadow: 0 8px 32px rgba(3, 57, 102, 0.2);
-    padding: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    box-shadow: 0 8px 32px rgba(3, 57, 102, 0.18);
+    padding: 32px 36px 40px;
     animation: fadeInUp 0.4s ease both;
+    box-sizing: border-box;
 }
 
-/* Logo */
-.lg-saavedra {
-    width: 180px;
-    margin: 0 auto 1.5rem auto;
+/* ── Encabezado de Página ─────────────────────────────────── */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 4px solid var(--gis-blue);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-title-group h1 {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-title-group .subtitle-text {
+    font-size: 0.85rem;
+    color: #5a7a99;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
     display: block;
 }
 
-/* Subtítulo */
-.sub-title {
-    text-align: center;
-    font-size: 1.5rem;
-    color: var(--gis-blue);
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    font-size: 0.88rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 2rem;
+    letter-spacing: 0.5px;
+    color: var(--gis-blue);
+    background: #f0f6fc;
+    border: 3px solid var(--gis-blue);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    cursor: pointer;
 }
 
-.form-container {
-    width: 100%;
+.btn-volver:hover {
+    background: var(--gis-blue);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(3, 57, 102, 0.25);
 }
 
-/* Layout del formulario usando CSS Grid */
-.row {
+/* ── Secciones Formales del Formulario ─────────────────────── */
+.form-section {
+    margin-bottom: 22px;
+    background: #f8fafc;
+    border: 2px solid rgba(3, 57, 102, 0.18);
+    border-radius: 8px;
+    padding: 20px 24px 24px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(3, 57, 102, 0.15);
+}
+
+.section-title {
+    font-size: 0.92rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.section-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #ffffff;
+    background: var(--gis-blue);
+    padding: 2px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Grids de Campos ──────────────────────────────────────── */
+.grid-row {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 16px;
 }
 
-.col-md-12 {
-    grid-column: span 2;
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
 }
 
-.col-md-6 {
-    grid-column: span 1;
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
 }
 
-.mb-2 {
-    margin-bottom: 0.75rem;
-}
-
+/* ── Form Outline & Labels ────────────────────────────────── */
 .form-outline {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
+    width: 100%;
 }
 
-/* Inputs y Selects */
+.form-label {
+    font-size: 0.78rem;
+    color: var(--gis-blue);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.required-indicator {
+    color: var(--gis-red);
+    font-weight: 900;
+}
+
+/* ── Inputs y Selects Corporativos ────────────────────────── */
 .form-control,
 .form-select {
     width: 100%;
@@ -94,19 +169,18 @@
     font-weight: 600;
     border-radius: 6px;
     outline: none;
-    padding: 10px;
-    text-align: center;
-    border: 2px solid rgba(3, 57, 102, 0.25);
+    padding: 10px 14px;
+    border: 2px solid rgba(3, 57, 102, 0.28);
     background: #ffffff;
-    color: var(--gis-blue);
-    transition: all 0.3s ease;
+    color: #1e293b;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+    height: 44px;
 }
 
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--gis-blue);
-    background: #f0f6fc;
-    box-shadow: 0 0 0 3px rgba(3, 57, 102, 0.15);
+.form-control::placeholder {
+    color: #94a3b8;
+    font-weight: 500;
 }
 
 .form-control:hover,
@@ -114,49 +188,106 @@
     border-color: var(--gis-blue);
 }
 
-.form-label {
-    font-size: 0.82rem;
-    color: var(--gis-blue);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--gis-blue);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(3, 57, 102, 0.18);
 }
 
-/* Botón de envío */
-.custom-btn {
-    width: 100%;
-    background-color: var(--gis-blue);
-    color: #fff;
-    padding: 0.8rem;
-    border-radius: 6px;
+.form-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23033966' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 14px 10px;
+    padding-right: 36px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* ── Barra de Acciones Inferior ───────────────────────────── */
+.form-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 3px solid rgba(3, 57, 102, 0.15);
+}
+
+.actions-note {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.actions-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-cancelar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    height: 44px;
+    border: 3px solid var(--gis-red);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--gis-red);
+    font-size: 0.88rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-cancelar:hover {
+    background: var(--gis-red);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(156, 3, 0, 0.3);
+}
+
+.btn-registrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    height: 44px;
     border: none;
-    font-size: 1.05rem;
+    border-radius: 8px;
+    background: var(--gis-blue);
+    color: #ffffff;
+    font-size: 0.92rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     cursor: pointer;
-    margin-top: 1.5rem;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 4px 15px rgba(3, 57, 102, 0.3);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.custom-btn:hover {
-    background-color: #28a745;
+.btn-registrar:hover {
+    background: #28a745;
     transform: scale(1.03) translateY(-2px);
     box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.custom-btn:active {
+.btn-registrar:active {
     transform: scale(0.97);
 }
 
-/* Ilustración lateral oculta por defecto para mantenerlo limpio */
-.img-saavedra {
-    display: none;
-}
-
-/* Animaciones */
+/* ── Animación ────────────────────────────────────────────── */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -168,43 +299,43 @@
     }
 }
 
-/* Estilos responsivos */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px 10px;
-        top: 20px;
+/* ── Responsivo ───────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .create-user-container {
+        width: 96%;
+        padding: 24px 20px 30px;
     }
-    .cascading-right {
-        padding: 1.5rem;
-        border-width: 4px;
-    }
-    .lg-saavedra {
-        width: 140px;
-    }
-    .sub-title {
-        font-size: 1.2rem;
-        margin-bottom: 1.5rem;
-    }
-    .row {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    .col-md-6 {
-        grid-column: span 2;
-    }
-    .form-control,
-    .form-select {
-        font-size: 0.9rem;
-        padding: 8px;
-    }
-    .custom-btn {
-        font-size: 0.95rem;
-        padding: 0.7rem;
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* Auto-generated utility classes */
-.use-font-size-9rem { font-size: .9rem; }
-.use-color-1e293b { color: #1e293b; }
-.use-font-weight-600 { font-weight: 600; }
-.use-display-inline { display: inline; }
+@media (max-width: 768px) {
+    .create-user-container {
+        width: 98%;
+        margin-top: 80px;
+        padding: 18px 14px 24px;
+    }
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+    .form-actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .actions-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn-cancelar,
+    .btn-registrar {
+        width: 100%;
+    }
+}
+
+

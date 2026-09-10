@@ -28,6 +28,10 @@ class CreateUserRequest extends FormRequest
             'a_materno' => 'required|string',
             'contrasena' => 'required|string',
             'perfil' => 'required',
+            'turno' => 'required|string',
+            'planta' => 'required|string',
+            'area' => 'required|string',
+            'puesto' => 'required|string',
         ];
     }
 }

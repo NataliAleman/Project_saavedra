@@ -62,6 +62,8 @@ export default defineConfig({
                 "resources/css/users_views/recoverPassword.css",
                 'resources/css/users_views/productionData.css',
                 'resources/js/users_views/productionData.js',
+                'resources/css/users_views/organigrama.css',
+                'resources/js/users_views/organigrama.js',
 
                 //Views processes
                 "resources/css/processes_views/cNominals_view.css",

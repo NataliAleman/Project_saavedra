@@ -1,4 +1,4 @@
-﻿/* global.css: reset, Poppins, variables GIS */
+/* global.css: reset, Poppins, variables GIS */
 @import "global.css";
 
 /* =============================================================
@@ -44,15 +44,16 @@ body {
 
 /* ── Contenedor principal ───────────────────────────────────── */
 .container1 {
-    width: 94%;
-    max-width: 1400px;
-    margin: 100px auto 60px;
+    width: 98%;
+    max-width: 98%;
+    margin: 75px auto 40px;
     background: #ffffff;
     border-radius: var(--radius-card);
     border: 5px solid var(--color-border);
     box-shadow: var(--shadow-card);
-    padding: 32px 36px 40px;
+    padding: 22px 24px 30px;
     animation: fadeInUp 0.4s ease both;
+    box-sizing: border-box;
 }
 
 /* ── Encabezado de sección ──────────────────────────────────── */
@@ -148,7 +149,6 @@ body {
     width: 100%;
     padding: 8px 14px 8px 40px;
     font-size: 1em;
-    /* font-family heredado de global.css */
     font-weight: 500;
     letter-spacing: 0.5px;
     border: 5px solid var(--color-border);
@@ -165,11 +165,10 @@ body {
     box-shadow: 0 0 0 3px rgba(3, 57, 102, 0.15);
 }
 
-/* Selects de filtro — mismo estilo que .form-control del referencia */
+/* Selects de filtro */
 .role-select-toolbar {
     padding: 8px 14px;
     font-size: 1em;
-    /* font-family heredado de global.css */
     font-weight: 500;
     letter-spacing: 0.5px;
     border: 5px solid var(--color-border);
@@ -191,7 +190,6 @@ body {
 .btn-clear-filters {
     padding: 8px 16px;
     font-size: 0.9em;
-    /* font-family heredado de global.css */
     font-weight: 700;
     letter-spacing: 0.5px;
     border: 5px solid var(--color-primary);
@@ -219,42 +217,40 @@ body {
 /* ── Tabla ──────────────────────────────────────────────────── */
 .table-wrapper {
     border-radius: var(--radius-card);
-    overflow: hidden;
-    overflow-y: auto;
-    max-height: 60vh;
+    overflow: visible;
+    max-height: none;
     border: 5px solid var(--color-border);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.18);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 table {
     width: 100%;
+    min-width: 0;
     border-collapse: collapse;
-    /* font-family heredado de global.css */
     background: #ffffff;
+    table-layout: auto;
 }
 
-/* Cabecera — idéntica a .table-meta th / .table-title */
+/* Cabecera */
 table thead th {
     background: var(--color-primary-dim);
     color: #ffffff;
-    font-size: 0.85rem;
+    font-size: 0.76rem;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 14px 16px;
+    letter-spacing: 0.04em;
+    padding: 10px 6px;
     text-align: center;
     border: none;
     white-space: nowrap;
-    /* Sticky header */
-    position: sticky;
-    top: 0;
-    z-index: 5;
 }
 
 /* Filas del cuerpo */
 table tbody tr {
     transition: background 0.2s ease;
-    border-bottom: 3px solid var(--color-border);
+    border-bottom: 2px solid rgba(3, 57, 102, 0.15);
 }
 
 table tbody tr:nth-child(even) {
@@ -273,31 +269,44 @@ table tbody tr:last-child {
     border-bottom: none;
 }
 
-/* Celdas — idénticas a .table td */
+/* Celdas */
 table td {
-    padding: 13px 16px;
-    font-size: 0.95rem;
+    padding: 7px 6px;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--color-text);
     vertical-align: middle;
     text-align: center;
     border: none;
-    border-right: 2px solid rgba(3, 57, 102, 0.12);
+    border-right: 1px solid rgba(3, 57, 102, 0.12);
+    white-space: nowrap;
 }
 
 table td:last-child {
     border-right: none;
 }
 
+.user-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--gis-blue);
+    white-space: normal;
+    word-break: normal;
+    line-height: 1.2;
+    display: inline-block;
+    text-align: left;
+}
+
 /* ── Badges de Rol ──────────────────────────────────────────── */
 .badge-rol {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 3px 8px;
     border-radius: 20px;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
 .badge-admin    { background: var(--gis-blue); color: #ffffff; }
@@ -307,23 +316,46 @@ table td:last-child {
 .badge-almacen  { background: #9a4a0e; color: #ffffff; }
 .badge-default  { background: #475569; color: #ffffff; }
 
+.badge-planta {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #1e293b;
+    white-space: nowrap;
+}
+
+.badge-turno {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #e0f2fe;
+    color: #0369a1;
+    white-space: nowrap;
+}
+
 /* ── Badges de Estatus ──────────────────────────────────────── */
 .badge-status {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
+    gap: 5px;
+    padding: 2px 8px;
     border-radius: 20px;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
 }
 
 .badge-status::before {
     content: '';
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     display: inline-block;
     flex-shrink: 0;
@@ -332,80 +364,272 @@ table td:last-child {
 .badge-activo {
     background: rgba(40, 167, 69, 0.15);
     color: #1a6b33;
-    border: 2px solid #28a745;
+    border: 1.5px solid #28a745;
 }
 .badge-activo::before   { background: #28a745; }
 
 .badge-inactivo {
     background: rgba(156, 3, 0, 0.12);
     color: var(--gis-red);
-    border: 2px solid var(--gis-red);
+    border: 1.5px solid var(--gis-red);
 }
 .badge-inactivo::before { background: var(--gis-red); }
 
-/* ── Botones de acción (mismo sistema que processProduction) ── */
+/* ── Botones de acción con imágenes ──────────────────────────── */
 .actions-cell {
-    display: flex;
-    gap: 8px;
+    display: inline-flex;
+    gap: 6px;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
 }
 
-.btn-action {
+.btn-action-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    padding: 0;
-    height: 2.4em;
-    padding: 0 1em;
+    padding: 2px;
+    background: transparent;
     border: none;
-    border-radius: var(--radius-btn);
-    font-size: 0.82rem;
-    font-weight: 800;
-    /* font-family heredado de global.css */
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    outline: none;
     text-decoration: none;
+    vertical-align: middle;
 }
 
-/* Activar → color primario, hover verde (igual que .btn-submit) */
-.btn-activate {
-    background: var(--color-primary);
-    color: #ffffff;
-    box-shadow: var(--shadow-btn);
+.action-img-icon {
+    width: 18px;
+    height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.12));
 }
-.btn-activate:hover {
-    background: var(--color-success);
-    transform: scale(1.05) translateY(-2px);
+
+.btn-action-icon:hover .action-img-icon {
+    transform: scale(1.2);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.btn-action-icon:active .action-img-icon {
+    transform: scale(0.9);
+}
+
+/* ── Modal de Edición de Usuario ─────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.modal-overlay.active {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 860px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 5px solid var(--gis-blue);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    padding: 26px 32px 30px;
+    animation: fadeInUp 0.3s ease both;
+    box-sizing: border-box;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    border-bottom: 3px solid var(--gis-blue);
+}
+
+.modal-title {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: var(--gis-red);
+}
+
+.modal-section {
+    background: #f8fafc;
+    border: 2px solid rgba(3, 57, 102, 0.15);
+    border-radius: 8px;
+    padding: 16px 20px 20px;
+    margin-bottom: 16px;
+}
+
+.modal-section-title {
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid rgba(3, 57, 102, 0.1);
+}
+
+.modal-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.modal-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.modal-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+
+.modal-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.modal-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-input,
+.modal-select {
+    width: 100%;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 6px;
+    outline: none;
+    padding: 9px 12px;
+    border: 2px solid rgba(3, 57, 102, 0.28);
+    background: #ffffff;
+    color: #1e293b;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+.modal-input:focus,
+.modal-select:focus {
+    border-color: var(--gis-blue);
+    box-shadow: 0 0 0 3px rgba(3, 57, 102, 0.18);
+}
+
+.modal-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23033966' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px 10px;
+    padding-right: 32px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid rgba(3, 57, 102, 0.15);
+}
+
+.btn-modal-cancel {
+    padding: 0 20px;
+    height: 42px;
+    border: 3px solid var(--gis-red);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--gis-red);
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-modal-cancel:hover {
+    background: var(--gis-red);
+    color: #ffffff;
+}
+
+.btn-modal-save {
+    padding: 0 28px;
+    height: 42px;
+    border: none;
+    border-radius: 8px;
+    background: var(--gis-blue);
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    cursor: pointer;
+    box-shadow: var(--shadow-btn);
+    transition: all 0.25s ease;
+}
+
+.btn-modal-save:hover {
+    background: #28a745;
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-/* Inactivar → ámbar */
-.btn-inactivate {
-    background: #b45309;
-    color: #ffffff;
-    box-shadow: 0 4px 15px rgba(180, 83, 9, 0.3);
-}
-.btn-inactivate:hover {
-    background: #d97706;
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
-}
-
-/* Eliminar → igual que .btn-cancel-report */
-.btn-delete {
-    background: var(--color-danger);
-    color: #ffffff;
-    box-shadow: 0 4px 15px rgba(156, 3, 0, 0.3);
-}
-.btn-delete:hover {
-    background: var(--color-danger-hover);
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(156, 3, 0, 0.5);
+@media (max-width: 768px) {
+    .modal-grid-3,
+    .modal-grid-4,
+    .modal-grid-2 {
+        grid-template-columns: 1fr;
+    }
 }
 
 .btn-action:active {

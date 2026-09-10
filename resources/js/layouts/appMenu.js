@@ -378,6 +378,7 @@ function getRoutes(profile) {
                     title: "Usuarios",
                     routes: [
                         ['users', 'Ver usuarios'],
+                        ['usersOrganigrama', 'Organigrama'],
                         ["createUser", "Registrar usuario"],
                         ["recoverPassword", "Recuperar contraseña"],
                     ],
@@ -481,6 +482,7 @@ function getRoutes(profile) {
                             title: "Usuarios",
                             routes: [
                                 ['users', 'Ver usuarios'],
+                                ['usersOrganigrama', 'Organigrama'],
                                 ["createUser", "Registrar usuario"],
                                 ["recoverPassword", "Recuperar contraseña"],
                             ],

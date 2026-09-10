@@ -1,0 +1,635 @@
+/* =============================================================
+   Organigrama Visual GIS — Estilo Diagrama de Árbol Conectado
+   Inspirado en organigrama corporativo con conectores y avatares
+   ============================================================= */
+@import "../global.css";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --org-line-color: #033966;
+    --org-line-width: 3px;
+    --org-navy: #033966;
+    --org-red: #dc2626;
+    --org-red-bg: #fef2f2;
+    --org-green: #16a34a;
+    --org-green-bg: #f0fdf4;
+}
+
+body {
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    overflow-x: hidden;
+}
+
+/* ── Contenedor Maestro ─────────────────────────────────────── */
+.org-master-wrapper {
+    width: 98%;
+    max-width: 98%;
+    margin: 70px auto 40px;
+    background: #ffffff;
+    border: 5px solid var(--gis-blue);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(3, 57, 102, 0.2);
+    padding: 24px 28px 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ── Encabezado Principal ───────────────────────────────────── */
+.org-top-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 4px solid var(--gis-blue);
+}
+
+.org-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.org-brand-logo {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+}
+
+.org-brand-titles h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.org-brand-titles span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.5px;
+}
+
+.org-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-header-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-action-table {
+    background: #ffffff;
+    color: var(--gis-blue);
+    border: 3px solid var(--gis-blue);
+}
+.btn-action-table:hover {
+    background: var(--gis-blue);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(3, 57, 102, 0.3);
+}
+
+.btn-action-create {
+    background: #28a745;
+    color: #ffffff;
+    border: 3px solid #28a745;
+}
+.btn-action-create:hover {
+    background: #218838;
+    border-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(40, 167, 69, 0.35);
+}
+
+/* ── Resumen de Contadores (KPIs) ───────────────────────────── */
+.org-kpi-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.org-kpi-pill {
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.org-kpi-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.org-kpi-pill.pill-total {
+    border-color: var(--gis-blue);
+    background: #f0f6fc;
+}
+.org-kpi-pill.pill-active {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.08);
+}
+.org-kpi-pill.pill-inactive {
+    border-color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.kpi-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.kpi-num {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #1e293b;
+}
+.pill-total .kpi-num { color: var(--gis-blue); }
+.pill-active .kpi-num { color: #16a34a; }
+.pill-inactive .kpi-num { color: #dc2626; }
+
+/* ── Barra de Filtros y Zoom ────────────────────────────────── */
+.org-toolbar-bar {
+    background: #f1f5f9;
+    border: 3px solid rgba(3, 57, 102, 0.18);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-lbl {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--gis-blue);
+    text-transform: uppercase;
+}
+
+.btn-toggle-group {
+    display: inline-flex;
+    border: 2px solid var(--gis-blue);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.btn-toggle {
+    padding: 5px 12px;
+    background: #ffffff;
+    color: var(--gis-blue);
+    border: none;
+    border-right: 1px solid rgba(3, 57, 102, 0.2);
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-toggle:last-child { border-right: none; }
+.btn-toggle:hover { background: #e2e8f0; }
+.btn-toggle.active {
+    background: var(--gis-blue);
+    color: #ffffff;
+}
+
+.select-filter-org {
+    padding: 5px 10px;
+    border: 2px solid var(--gis-blue);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--gis-blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+}
+
+.search-box-org {
+    position: relative;
+    min-width: 220px;
+    max-width: 320px;
+    flex: 1;
+}
+.search-box-org input {
+    width: 100%;
+    padding: 6px 10px 6px 32px;
+    border: 2px solid var(--gis-blue);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e293b;
+    outline: none;
+    box-sizing: border-box;
+}
+.search-box-org svg {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    color: var(--gis-blue);
+    pointer-events: none;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-zoom {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 2px solid var(--gis-blue);
+    border-radius: 6px;
+    color: var(--gis-blue);
+    font-weight: 900;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-zoom:hover {
+    background: var(--gis-blue);
+    color: #ffffff;
+}
+
+/* ── Lienzo / Canvas del Árbol ──────────────────────────────── */
+.org-canvas-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    min-height: 600px;
+    max-height: 80vh;
+    padding: 30px 20px 60px;
+    background: radial-gradient(circle, #f1f5f9 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: #fdfdfd;
+    border: 3px solid #cbd5e1;
+    border-radius: 10px;
+    position: relative;
+    box-sizing: border-box;
+    cursor: grab;
+    user-select: none;
+}
+
+.org-canvas-container:active {
+    cursor: grabbing;
+}
+
+.org-tree-root {
+    display: inline-block;
+    min-width: 100%;
+    text-align: center;
+    transform-origin: top center;
+    transition: transform 0.2s ease-out;
+}
+
+/* ── Estructura Jerárquica del Árbol (CSS Tree) ─────────────── */
+.tree-branch,
+.tree-branch ul,
+.tree-branch li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tree-branch {
+    display: flex;
+    justify-content: center;
+}
+
+.tree-branch ul {
+    display: flex;
+    justify-content: center;
+    padding-top: 36px;
+    position: relative;
+}
+
+.tree-branch li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+}
+
+/* Líneas conectoras del árbol */
+.tree-branch li::before,
+.tree-branch li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: var(--org-line-width) solid var(--org-line-color);
+    width: 50%;
+    height: 36px;
+}
+
+.tree-branch li::after {
+    right: auto;
+    left: 50%;
+    border-left: var(--org-line-width) solid var(--org-line-color);
+}
+
+.tree-branch li:only-child::after,
+.tree-branch li:only-child::before {
+    display: none;
+}
+
+.tree-branch li:only-child {
+    padding-top: 0;
+}
+
+.tree-branch li:first-child::before,
+.tree-branch li:last-child::after {
+    border: 0 none;
+}
+
+.tree-branch li:last-child::before {
+    border-right: var(--org-line-width) solid var(--org-line-color);
+    border-radius: 0 10px 0 0;
+}
+
+.tree-branch li:first-child::after {
+    border-radius: 10px 0 0 0;
+}
+
+.tree-branch ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: var(--org-line-width) solid var(--org-line-color);
+    width: 0;
+    height: 36px;
+    transform: translateX(-50%);
+}
+
+/* ── Tarjeta de Persona (Organigram Card Node) ──────────────── */
+.org-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #ffffff;
+    border: 3px solid var(--gis-blue);
+    border-radius: 12px;
+    padding: 14px 16px 12px;
+    min-width: 170px;
+    max-width: 210px;
+    box-shadow: 0 4px 14px rgba(3, 57, 102, 0.12);
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.org-node:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 10px 24px rgba(3, 57, 102, 0.25);
+    z-index: 20;
+}
+
+/* Nivel 1: Gerente / Jefe de Planta */
+.org-node-director {
+    border-width: 4px;
+    border-color: #033966;
+    background: linear-gradient(180deg, #ffffff 0%, #edf4fa 100%);
+    min-width: 220px;
+    max-width: 260px;
+    box-shadow: 0 8px 24px rgba(3, 57, 102, 0.22);
+}
+
+/* Nivel 2: Supervisores */
+.org-node-supervisor {
+    border-color: #0284c7;
+    background: #ffffff;
+    min-width: 190px;
+    max-width: 230px;
+}
+
+/* ── NODO INACTIVO / FALTA DE PERSONAL (ROJO DESTACADO) ─────── */
+.org-node.node-inactivo {
+    border: 3px solid #dc2626 !important;
+    background: var(--org-red-bg) !important;
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.28) !important;
+    animation: pulseBorder 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseBorder {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+    50% { box-shadow: 0 0 12px 3px rgba(220, 38, 38, 0.4); }
+}
+
+.node-inactivo:hover {
+    box-shadow: 0 10px 28px rgba(220, 38, 38, 0.45) !important;
+}
+
+.node-inactivo .org-name {
+    color: #991b1b !important;
+}
+
+.node-inactivo .org-role {
+    color: #b91c1c !important;
+}
+
+/* Badge de Falta / Inactivo */
+.badge-falta-alert {
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* ── Componentes Internos del Nodo ──────────────────────────── */
+.org-avatar-wrapper {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.org-avatar-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--gis-blue);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.node-inactivo .org-avatar-circle {
+    border-color: #dc2626 !important;
+    background: #fee2e2;
+}
+
+.org-avatar-svg {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.org-node-director .org-avatar-circle {
+    width: 68px;
+    height: 68px;
+    border-width: 4px;
+}
+.org-node-director .org-avatar-svg {
+    width: 52px;
+    height: 52px;
+}
+
+.org-name {
+    font-size: 0.86rem;
+    font-weight: 900;
+    color: var(--gis-blue);
+    text-align: center;
+    line-height: 1.2;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.org-node-director .org-name {
+    font-size: 0.96rem;
+}
+
+.org-role {
+    font-size: 0.74rem;
+    font-weight: 700;
+    font-style: italic;
+    color: #475569;
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 6px;
+}
+
+.org-meta-tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.org-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #334155;
+    text-transform: uppercase;
+}
+
+.org-tag-planta {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.org-tag-turno {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* ── Grupo de Área (Columnas para Operativos) ───────────────── */
+.area-team-subgroup {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 14px;
+    flex-wrap: wrap;
+    max-width: 320px;
+}
+
+/* Subárbol vertical u horizontal por área */
+.area-branch-title {
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: #ffffff;
+    background: var(--gis-blue);
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Sub-rama de Puestos (Torno CNC, Centro de Maquinados, Ayudante General, etc.) */
+.sub-role-branch-title {
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #0369a1;
+    background: #e0f2fe;
+    border: 2px solid #bae6fd;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(3, 105, 161, 0.1);
+}
+
+.puesto-nodes-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}

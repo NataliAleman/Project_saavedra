@@ -29,6 +29,11 @@ class UserController extends Controller
         $users = User::all();
         return view("users_views.users", compact("layout", "users"));
     }
+    public function organigrama(HttpRequest $request){
+        $layout = $this->getLayout();
+        $users = User::all();
+        return view("users_views.organigrama", compact("layout", "users"));
+    }
     public function create(){
         $layout = auth()->user() && ($this->getLayout() == "layouts.appMaster" || $this->getLayout() == "layouts.appAdmin") ? $this->getLayout() : 'layouts.defaultLayout';
         return view("users_views.create_user", compact("layout"));
@@ -87,11 +92,23 @@ class UserController extends Controller
     public function updateUsuario(HttpRequest $request, $id){
         $user = User::findOrFail($id);
         $data = $request->validate([
-            'nombre' => 'required',
-            'a_paterno' => 'required',
-            'a_materno' => 'required',
-            'perfil' => 'required'
+            'nombre' => 'required|string',
+            'a_paterno' => 'required|string',
+            'a_materno' => 'required|string',
+            'perfil' => 'required',
+            'turno' => 'nullable|string',
+            'planta' => 'nullable|string',
+            'area' => 'nullable|string',
+            'puesto' => 'nullable|string',
+            'contrasena' => 'nullable|string|min:8',
         ]);
+
+        if (!empty($data['contrasena'])) {
+            $data['contrasena'] = bcrypt($data['contrasena']);
+        } else {
+            unset($data['contrasena']);
+        }
+
         $user->update($data);
         return redirect()->back()->with('success', 'Usuario actualizado correctamente.');
     }

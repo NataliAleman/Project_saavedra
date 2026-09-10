@@ -55,6 +55,7 @@ Route::controller(LoginController::class)->group(function () {
 //Grupo de rutas para el controlador de ver usuarios en perfil de master
 Route::controller(UserController::class)->group(function () {
     Route::get('/users', 'show')->name('users'); //Vista de usuarios
+    Route::get('/users/organigrama', 'organigrama')->name('users.organigrama'); //Vista de organigrama
     Route::get('/users/create', 'create')->name('createUser'); //Vista de crear usuario
     Route::post('/users/create/store', 'store')->name('storeUser');
     Route::get('/users/recoverPassword', 'showRecoverPassword')->name('recoverPassword'); //Vista recuperar contraseña
