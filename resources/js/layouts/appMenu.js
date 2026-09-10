@@ -90,11 +90,26 @@ function createMenu(profile) {
             });
             if (prefLi) {
                 const prefLinks = Array.from(prefLi.querySelectorAll("a.nav-link"));
-                targetLink = prefLinks.find(a => isLinkMatching(a, currentPath));
+                // Primero buscar coincidencia exacta de pathname
+                targetLink = prefLinks.find(a => {
+                    const linkUrl = new URL(a.href, window.location.origin);
+                    return currentPath === linkUrl.pathname && isLinkMatching(a, currentPath);
+                });
+                if (!targetLink) {
+                    targetLink = prefLinks.find(a => isLinkMatching(a, currentPath));
+                }
             }
         }
 
-        // 2. Si no hay sección preferida o no hubo coincidencia en ella, buscar la primera coincidencia en todo el menú
+        // 2. Si no hay sección preferida o no hubo coincidencia en ella, buscar primero coincidencia exacta de pathname en todo el menú
+        if (!targetLink) {
+            targetLink = allLinks.find(a => {
+                const linkUrl = new URL(a.href, window.location.origin);
+                return currentPath === linkUrl.pathname && isLinkMatching(a, currentPath);
+            });
+        }
+
+        // 3. Si aún no hay coincidencia exacta, buscar coincidencia por sub-rutas
         if (!targetLink) {
             targetLink = allLinks.find(a => isLinkMatching(a, currentPath));
         }
@@ -165,7 +180,7 @@ function isPathMatching(currentPath, aHref) {
         }
 
         // Sub-rutas de usuarios (ej: /users/1/edit -> /users)
-        if (currentPath.startsWith('/users/') && !currentPath.includes('/create') && !currentPath.includes('/recoverPassword')) {
+        if (currentPath.startsWith('/users/') && !currentPath.includes('/create') && !currentPath.includes('/recoverPassword') && !currentPath.includes('/organigrama')) {
             if (window.routes && window.routes.users) {
                 const usersPath = new URL(window.routes.users, window.location.origin).pathname;
                 if (linkPath === usersPath) return true;
